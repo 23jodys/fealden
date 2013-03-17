@@ -1,0 +1,23 @@
+* General stuff
+** Get better coverage on the unit tests
+** Explore logging a bit more
+*** specifically how to get logging of modules to work with some
+   granularity, that is to have DEBUG on for only certain modules
+** DONE - Extend queue past process boundary so that fealdend could talk to web.py
+
+o [jodys] Features
+** DONE -- Search for sensors with max free energy between specified range
+** DONE --Specify number of folds in sensor
+** DONE -- Add in web.py
+** realtime status update for job
+** DONE -- solution_element class
+** DONE -- add parameters to checknode
+
+* Refactoring
+** I should give some more thought to how messages are dispatched 
+   through the queues, perhaps a sort of mini-language to specify
+   all the parameters and goals, etc.
+
+* Bug fixes
+** correct deltaG calculation for gain plot of sensor
+** verify all energy calculations

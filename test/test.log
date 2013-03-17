@@ -1,0 +1,4 @@
+searchworker(20942): got this msg_dict -- {'UNKNOWN': <class 'searchserver_tests.RequestQueueUnknownException'>, 'BACKTRACKING': <class 'searchserver_tests.RequestQueueBacktrackingException'>}
+searchworker (20942): on request queue received: ('BACKTRACKING', 'ATTA', '/tmp/test', 'test@example.com', 60)
+request_queue(20942): going to attempt to execute <class 'searchserver_tests.RequestQueueBacktrackingException'>
+searchworker (20942): on request queue received: EXIT

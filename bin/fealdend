@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+
+"""This daemon listens on a queue for requests, processes those
+   requests and then writes the output for webfealden.py"""
+
+import multiprocessing
+import time
+import sys
+import logging
+import os
+from fealden import searchserver, util
+
+f2 = logging.getLogger('fealden.searchserver')
+f2.setLevel(logging.INFO)
+logger = logging.getLogger('fealden')
+logger.setLevel(logging.INFO)
+bl = logging.getLogger('unafold')
+bl.setLevel(logging.INFO)
+handler = logging.FileHandler("test.log")
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
+
+if __name__ == '__main__':
+    # Create main request queue to be shared by all workers,
+    # this is, obviously, thread/process safe, unlike DirectoryQueue.
+    request_q = multiprocessing.Queue()
+
+    # Launch search server
+    numprocs = 4
+    logger.info("fealdend: launching searchserver with %d searchworkers" % numprocs)
+    searchserver.start(request_q, numprocs=numprocs)
+    
+    # Now in this process we will centrally manage all the requests
+    # coming in for searches from any number of front ends. Each
+    # request will be verified and then written to a request queue
+    # that all workers performing searches will be watching.
+    while True:
+        workqueue_dir = "/var/fealden/workqueue"
+        logger.info("fealdend: opening workqueue %s" % (workqueue_dir))
+        workqueue = util.DirectoryQueue(workqueue_dir)
+        while True:
+            # Read until queue is empty, blocking
+            request = workqueue.get()
+            if request.valid() and isinstance(request, util.RequestElement):
+                logger.info("fealdend: adding %s for %s to request_q" %
+                            (request.command, request.recognition))
+                request_q.put(request)
+            else:
+                logger.info("fealdend: received bad request on request_q: %s" % request)

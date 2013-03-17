@@ -1,0 +1,10 @@
+$def with (form)
+
+Fealden is a tool for the automated creation of Transcription Factor Beacons, novel biosensor probes for transcription factor activity and quantity.
+
+To generate a sensor, input the transcription factor's recognition sequence.
+
+<form name="main" method="post"> 
+$if not form.valid: <p class="error">Please, correct the errors below:</p>
+$:form.render()
+</form>
