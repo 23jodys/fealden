@@ -7,7 +7,7 @@ import time
 
 from fealden import unafold
 
-logger = logging.getLogger('util')
+logger = logging.getLogger('fealden.util')
 
 def complement(seq):
     """Quick helper function to calculate DNA sequence's complement.
@@ -229,6 +229,104 @@ class MaxValue(object):
         with self.lock:
             return self.val.value
 
+class SolutionElement():
+    """An element to be used in the solution queue utilized by
+       sensorsearch.
+
+       Arguments:
+       command -- Required, (SOLUTION|PRUNED|DEPTH)
+       sensor -- if command == solution: sensor is required
+       scores -- if command == solution: scores is required
+       folds -- if command == solution: folds is required
+       depth -- if command == (PRUNED|DEPTH): required
+                everytime a node is visited its depth is recorded,
+                likewise everytime a node is pruned, its depth is
+                recorded
+       """
+    def __init__(self, command, sensor=None, scores=None,
+                 folds=None, depth=None):
+        self.command = command
+        self.sensor = sensor
+        self.scores = scores
+        self.folds = folds
+        self.depth = depth
+    def __str__(self):
+        if isinstance(self.scores, list):
+            scores = len(self.scores)
+        else:
+            scores = self.scores
+
+        if isinstance(self.folds, list):
+            folds = len(self.folds)
+        else:
+            folds = self.folds
+
+        return ("CMD: %s, len(SENSOR): %s, len(SCORES): %s, len(FOLDS): %s, DEPTH: %s" %
+                  (self.command, self.sensor, scores, folds, self.depth))
+                  
+    def valid(self):
+        command = False
+        depth = False
+        sensor = False
+        scores = False
+        folds = False
+        pruned = False
+        logger.debug("SolutionElement(): %s" % (self))
+        if self.command=="SOLUTION":
+            logger.debug("SolutionElement(): GOOD - CMD: %s is good" % self.command)
+            command = True
+
+            if self.sensor:
+                logger.debug("SolutionElement(): GOOD - CMD: SOLUTION, has sensor")
+                sensor = True
+            else:
+                logger.debug("SolutionElement(): BAD - CMD: SOLUTION, doesn't have sensor")
+                sensor = False
+
+            if self.scores:
+                logger.debug("SolutionElement(): GOOD - CMD: SOLUTION, has scores")
+                scores = True
+            else:
+                logger.debug("SolutionElement(): BAD - CMD: SOLUTION, doesn't have scores")
+                scores = False
+
+            if self.folds:
+                logger.debug("SolutionElement(): GOOD - CMD: SOLUTION, has folds")
+                folds = True
+            else:
+                logger.debug("SolutionElement(): BAD - CMD: SOLUTION, doesn't have folds")
+                folds = False
+        elif self.command=="PRUNED":
+            logger.debug("SolutionElement(): GOOD - CMD: %s is good" % self.command)
+            command = True
+            if self.depth >= 0:
+                logger.debug("SolutionElement(): GOOD - CMD: PRUNED, depth %s >= 0"%
+                             self.depth)
+                pruned = True
+            else:
+                logger.debug("SolutionElement(): BAD - CMD: PRUNED, depth %s !>= 0"%
+                             self.depth)
+                pruned = False
+        elif self.command=="DEPTH":
+            logger.debug("SolutionElement(): GOOD - CMD: %s is good" % self.command)
+            command = True
+
+            if self.depth >= 0:
+                logger.debug("SolutionElement(): GOOD - CMD: DEPTH, depth %s >= 0"%
+                             self.depth)
+                depth = True
+            else:
+                logger.debug("SolutionElement(): BAD - CMD: DEPTH, depth %s !>= 0"%
+                             self.depth)
+                depth = False
+        else:
+            logger.debug("SolutionElement(): GOOD - CMD: %s is good" % self.command)
+            command = False
+
+        if (command and scores and sensor and folds) or (command and depth) or (command and pruned):
+            return True
+        else:
+            return False
 class OutputElement():
     """An element to used in an output queue.
 

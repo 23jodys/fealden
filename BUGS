@@ -1,0 +1,2 @@
+2013-03-19: weboutput.solution_failed() does not exist, failure to find a solution just silently fails
+2013-03-19: fealdend may be run as a daemon, but killing fealdend does NOT kill child processes

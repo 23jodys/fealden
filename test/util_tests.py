@@ -578,3 +578,125 @@ def OutputElement_test_generator():
 
     for test in tests:
         yield tester, test
+
+def SolutionElement_test_generator():
+    tests = ( {"command": "SOLUTION",
+               "sensor": True,
+               "scores": True,
+               "folds": True,
+               "depth": -3,
+               "purpose": "all good parametsr",
+               "valid": True},
+              {"command": "SOLUTION",
+               "sensor": True,
+               "scores": False,
+               "folds": True,
+               "depth": None,
+               "purpose": "missing scores",
+               "valid": False},
+              {"command": "SOLUTION",
+               "sensor": False,
+               "scores": True,
+               "folds": True,
+               "depth": None,
+               "purpose": "missing sensor",
+               "valid": False},
+              {"command": "SOLUTION",
+               "sensor": True,
+               "scores": True,
+               "folds": False,
+               "depth": None,
+               "purpose": "missing folds",
+               "valid": False},
+              {"command": "DEPTH",
+               "sensor": None,
+               "scores": None,
+               "folds": None,
+               "depth": 3,
+               "purpose": "good depth",
+               "valid": True},
+              {"command": "DEPTH",
+               "sensor": None,
+               "scores": None,
+               "folds": None,
+               "depth": -3,
+               "purpose": "negative depth",
+               "valid": False},
+              {"command": "DEPTH",
+               "sensor": None,
+               "scores": None,
+               "folds": None,
+               "depth": None,
+               "purpose": "missing depth",
+               "valid": False},
+              {"command": "DEPTH",
+               "sensor": None,
+               "scores": None,
+               "folds": None,
+               "depth": 0,
+               "purpose": "depth zero",
+               "valid": True},
+              {"command": "PRUNED",
+               "sensor": None,
+               "scores": None,
+               "folds": None,
+               "depth": 3,
+               "purpose": "good prune",
+               "valid": True},
+              {"command": "PRUNED",
+               "sensor": None,
+               "scores": None,
+               "folds": None,
+               "depth": -3,
+               "purpose": "negative depth for prune",
+               "valid": False},
+              {"command": "PRUNED",
+               "sensor": None,
+               "scores": None,
+               "folds": None,
+               "depth": 0,
+               "purpose": "depth zero for prune",
+               "valid": True},
+              {"command": "PRUNED",
+               "sensor": None,
+               "scores": None,
+               "folds": None,
+               "depth": None,
+               "purpose": "missing depth for prune",
+               "valid": False},
+              {"command": "@%^^*%@#$%",
+               "sensor": None,
+               "scores": None,
+               "folds": None,
+               "depth": None,
+               "purpose": "invalid command",
+               "valid": False},
+
+              )
+
+    def tester(testdict):
+        try:
+            element = util.SolutionElement(command=testdict["command"],
+                                           sensor=testdict["sensor"],
+                                           scores=testdict["scores"],
+                                           folds=testdict["folds"],
+                                           depth=testdict["depth"])
+        except:
+            logger.debug("SolutionElementTest(): BAD - init failed with %s" %
+                         sys.exc_info()[0])
+            raise
+            assert False
+        else:
+            logger.debug("SolutionElementTest(): GOOD -- init was fine")
+
+            if element.valid() == testdict["valid"]:
+                logger.debug("SolutionElementTest(): GOOD -- testing valid() with %s, expected %s, got %s"%
+                             (testdict["purpose"], testdict["valid"], element.valid()))
+                assert True
+            else:
+                logger.debug("SolutionElementTest(): BAD -- testing valid() with %s, expected %s, got %s"%
+                             (testdict["purpose"], testdict["valid"], element.valid()))
+                assert False
+
+    for test in tests:
+        yield tester, test

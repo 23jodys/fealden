@@ -1,0 +1,12 @@
+Fealden is a tool for the automated creation of Transcription Factor Beacons, 
+novel biosensor probes for transcription factor activity and quantity.
+
+More information may be found about the sensors at 
+Transcription Factor Beacons for the Quantitative Detection of DNA Binding Activity
+Andrew J. Bonham, Alexis Vallée-Bélisle, Norbert O. Reich, Francesco Ricci, and Kevin W. Plaxco. J. Am. Chem. Soc., Article ASAP, 2011, doi:10.1021/ja204775k
+http://dx.doi.org/10.1021/ja204775k
+
+This code depends on
+
+
+

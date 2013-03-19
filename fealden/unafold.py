@@ -882,11 +882,14 @@ def validate_sensor(sensor, scores, folds, bindingratiorange=(.9,1.1),
 
     Returns:
     boolean -- True if sensor is valid"""
-
     logger = logging.getLogger('fealden.unafold.validate_sensor')
 
+    # Set reasonable default if none are specified
+    if not bindingratiorange[0] or not bindingratiorange[1]:
+        bindingratiorange = (.9,1.1)
+
     # Verify that the number of folds is within the range specified
-    if numfoldrange:
+    if numfoldrange and numfoldrange[0] and numfoldrange[1]:
         if numfoldrange[0] <= len(folds) <= numfoldrange[1]:
             logger.debug("unafold.validate_sensor(%s): GOOD -- %d folds within %d to %d" %
                          (str(sensor), len(folds), numfoldrange[0], numfoldrange[1]))
@@ -941,14 +944,14 @@ def validate_sensor(sensor, scores, folds, bindingratiorange=(.9,1.1),
                      "(%f vs %f) in range %f < %f < %f" %
                      (str(sensor), scores["binding_on"]["percent"],
                       scores["nonbinding_off"]["percent"],
-                     bindingratiorange[0], ratio, bindingratiorange[1]))
+                      bindingratiorange[0], ratio, bindingratiorange[1]))
         bindingtest = True
     else:
         logger.debug("unafold.validate_sensor(%s): BAD -- binding ratio "
-                     "(%f vs %f) out of range %f < %f < %f" %
+                    "(%f vs %f) out of range %f < %f < %f" %
                      (str(sensor), scores["binding_on"]["percent"],
                       scores["nonbinding_off"]["percent"],
-                     bindingratiorange[0], ratio, bindingratiorange[1]))
+                      bindingratiorange[0], ratio, bindingratiorange[1]))
         bindingtest = False
 
     # Verify that the percentage of folds that the signaling behavior is

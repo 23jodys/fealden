@@ -2,6 +2,7 @@ import logging
 import multiprocessing
 import os
 import pickle
+from setproctitle import *
 import tempfile
 import time
 from fealden import util, backtracking, weboutput
@@ -9,18 +10,24 @@ from fealden import util, backtracking, weboutput
 logger = logging.getLogger("fealden.searchserver")
 
 def searchworker(request_q, output_q, cmd_dictionary=None):
+    setproctitle("fealdend: searchworker")
     def _request_queue_BACKTRACKING(request, output_q):
         logger.info("searchworker(%d): %s dispatched to _request_queue_BACKTRACKING" %
                     (os.getpid(), request.recognition))
         # Do the search
         sensor = util.Sensor(request.recognition)
+        setproctitle("fealdend: searchworker(%s)" % sensor.GetRecognition())
         solutions = backtracking.sensorsearch(sensor, request.maxtime,
                                               bindingratiorange = (request.binding_ratio_lo, request.binding_ratio_hi),
                                               maxunknownpercent=request.maxunknown_percent,
                                               numfoldrange=(request.numfolds_lo,request.numfolds_hi),
                                               maxsolutions= request.numsolutions,
                                               maxenergy = request.maxenergy)
-
+        logger.debug("fealdend: searchworker(%s), found %d solutions, putting them"
+                     "on the queue" %
+                     (sensor.GetRecognition(), len(solutions)))
+        
+        setproctitle("fealdend: searchworker")
         if solutions:
             for solution in solutions:
                 # put it on the output_q
@@ -30,9 +37,9 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
                 output_request = util.OutputElement(command="WEBOUTPUT",
                                                     status="FOUND",
                                                     output_dir= request.output_dir,
-                                                    sensor = solution[0],
-                                                    scores = solution[1],
-                                                    folds = solution[2],
+                                                    sensor = solution.sensor,
+                                                    scores = solution.scores,
+                                                    folds = solution.folds,
                                                     email = request.email)
                 if output_request.valid():
                     output_q.put(output_request)
@@ -43,9 +50,9 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
             logger.debug("searchworker (%d): no solution for %s" %
                          (os.getpid(), request.recognition))
             output_request = util.OutputElement(command="WEBOUTPUT",
-                                           status="FAILED",
-                                           output_dir= request.output_dir,
-                                           email = request.email)
+                                                status="FAILED",
+                                                output_dir= request.output_dir,
+                                                email = request.email)
             output_q.put(output_request)
 
     def _request_queue_UNKNOWN(request, output_q):
@@ -89,6 +96,7 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
         #time.sleep(.01)
 
 def solutionworker(output_q,cmd_dictionary=None):
+    setproctitle("fealdend: solutionworker")
     def _output_queue_UNKNOWN(output_request):
         # Process UNKNOWN messages from a solution queue
         logger.debug("output_queue: process (%d) reads UNKNOWN, msg is %s" %
@@ -109,6 +117,7 @@ def solutionworker(output_q,cmd_dictionary=None):
                                       output_request.output_dir)
             #email_notification(request[0], recognition, request[3])
         elif output_request.status == "FAILED":
+            weboutput.failed_output(output_request.sensor)
             logger.debug("solutionworker (%d): FAILED received for %s" %
                         (os.getpid(), output_request.sensor))
         else:
@@ -154,6 +163,7 @@ def start(request_q, numprocs=1):
     # Create solution queue to act as a sink for all
     # of the worker processes.
     # (FOUND/FAILED, output_directory, email, sensor)
+    setproctitle("fealdend")
     output_q = multiprocessing.Queue()
 
     # Create pool of wrappers around sensor search that will wait
@@ -168,5 +178,6 @@ def start(request_q, numprocs=1):
     # Start a process to processing the output requests
     logger.debug("main loop: starting solutionworker")
     worker = multiprocessing.Process(target=solutionworker, args=(output_q,))
+    worker.daemon=True
     worker.start()
 

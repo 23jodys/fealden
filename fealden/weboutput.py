@@ -20,6 +20,15 @@ class WebOutputError(Exception):
     def __str__(self):
         return repr(self.msg)
 
+def failed_output(sensor, output_dir):
+    logger.info("failed_output(%s, %s): starting output" %
+                (sensor, output_dir))
+
+    
+
+    logger.info("failed_output(%s, %s): finishing output" %
+                (sensor, output_dir))
+
 
 def solution_output(sensor, scores, folds, output_dir):
     """ This output's a ton of information and graphics

@@ -4,7 +4,7 @@ import os
 import pickle
 import subprocess
 
-from fealden import searchserver
+from fealden import searchserver, util
 
 render = web.template.render('templates/', base='layout')
 urls = (
@@ -14,7 +14,6 @@ urls = (
     )
 
 app = web.application(urls,globals())
-
 
 myform = form.Form(
     form.Textbox('Recognition Sequence',form.notnull, form.regexp('^[ATGC]*$', 'DNA alphabet only: A, T, G, or C'), description="Recognition", id="recog"),
@@ -82,12 +81,12 @@ class index:
         if not os.path.isfile(output_pickle):
             # Add this request to the workqueue for fealdend
             workqueue = "/var/fealden/workqueue"
-            q = searchserver.DirectoryQueue(workqueue)
-            request = searchserver.RequestElement(command="BACKTRACKING",
-                                                  recognition=recog,
-                                                  output_dir=output_dir,
-                                                  email=email,
-                                                  maxtime=60)
+            q = util.DirectoryQueue(workqueue)
+            request = util.RequestElement(command="BACKTRACKING",
+                                          recognition=recog,
+                                          output_dir=output_dir,
+                                          email=email,
+                                          maxtime=60)
             q.put(request)
             # # Create a new process to run fealden.web_output()
             # # This will run asynchronously, letting this process
