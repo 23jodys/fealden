@@ -17,6 +17,12 @@ app = web.application(urls,globals())
 
 myform = form.Form(
     form.Textbox('Recognition Sequence',form.notnull, form.regexp('^[ATGC]*$', 'DNA alphabet only: A, T, G, or C'), description="Recognition", id="recog"),
+    form.Textbox('Lower bound for number of foldings in a valid solution', value=2, id="numfolds_lo"),
+    form.Textbox('Upper bound for number of foldings in a valid solution', value=8, id="numfolds_hi"),
+    form.Textbox('Max percentage of folds that cannot be categorized', value=.1, id="maxunknown_percent"),
+    form.Textbox('Lower bound for ratio of binding foldings vs. nonbinding foldings', value=.9, id="binding_ratio_lo"),
+    form.Textbox('Upper bound for ratio of binding foldings vs. nonbinding foldings', value=1.1, id="binding_ratio_hi"),
+    form.Textbox('Maximum additional energy (kJ/mol)', value=5.0, id="maxenergy"),
     #    form.Textbox("email", description='(optional) email to recieve notifications at',
     #             id="email"),
     form.Button("Run", type="submit")
@@ -88,13 +94,6 @@ class index:
                                           email=email,
                                           maxtime=60)
             q.put(request)
-            # # Create a new process to run fealden.web_output()
-            # # This will run asynchronously, letting this process
-            # # complete and redirect.
-            # subprocess.Popen(["nohup python fealden.py -w -i %s -e %s &" % (recog, email)],
-            #                  shell=True,
-            #                  stdout=subprocess.PIPE,
-            #                  stderr=subprocess.STDOUT)
 
         # In both cases, send a http redirect to the solution
         raise web.seeother('/solution/' + recog + '/')
