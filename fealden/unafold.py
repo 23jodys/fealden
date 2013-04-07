@@ -5,45 +5,18 @@ from __future__ import division
 from types import *
 
 import argparse
-import sys
-import tempfile
-import subprocess
-import shutil
-import re
-import os
-import math
-import operator
 import copy
 import logging
+import math
+import operator
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
 
 import fealden
-
-
-#verify.py
-#
-#Purpose -- Takes a DNA sequence from stdin (one sequence per line), runs the
-#           sequence through UNAfold and outputs that sequence plus a GOOD or
-#            BAD depending on whether the sequence meets the requirements.
-#
-
-# Notes: hybrid-ss-min (part of UNAfold) actually
-#        does the folding, then ct-energy determines a) the secondary
-#        structure and b) the free energy of each conformation.
-
-class DistanceError(Exception):
-    """Exception raised for errors in calculating quencher
-       flurophore distances
-
-    Attributes:
-    expr -- input expression in which the error occurred
-    msg  -- explanation of the error
-    """
-    
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        return repr(self.msg)
 
 class UNAFoldError(Exception):
     """Exception raised for errors in calling some part of
@@ -65,7 +38,6 @@ def run_hybrid_ss_min(sensor, debug=False):
 
        Returns:
        list -- of lines from the .ct file
-
     """
     tempdir = tempfile.mkdtemp()
     # hybrid-ss-min can only read sequences in from a file and
@@ -90,7 +62,7 @@ def run_hybrid_ss_min(sensor, debug=False):
     # The program ct-energy (part of UNAfold) parses the .ct file and
     # returns an easily parseable secondary structure.
 
-    # Read in file
+    # Open .ct file
     ct_filename = os.path.join(tempdir, str(sensor) + ".ct")
     ct_file = open(ct_filename)
     if debug: print "run_hybrid_ss_min(): ct_file = %s" % ct_filename
@@ -189,7 +161,6 @@ def parse_ct(ct_data, debug=False):
        upstream: the 5' base
        downstream: the 3' base
        """
-
     foldings = []
     fold = []
 
@@ -225,6 +196,7 @@ def parse_ct(ct_data, debug=False):
                          "upstream": int(cols[2]),
                          "downstream": int(cols[3]),
                          "member": ""})
+
     # Catch the tail end case: if we have a non-empty fold,
     # append it to foldings.
     if fold:
@@ -431,15 +403,27 @@ def find_stems(fold, debug=False):
 
 
 def combine_stems(left_stems, right_stems, seq_length, depth=0, debug=False):
-    """In certain instances, we may wish to ignore bulge loops
-       in stems and combine those stems seperated by bulge loops,
-       this function takes two stems and determines if a bulge loop
-       seperates them, assumes that both stems contain indexes"""
+    """If the folding has bulge loops, merge the stems seperated by bulge
+       loops into a single stem.
 
+       Arguments:
+       left_stems -- a list of stems, as described in find stems, that contains
+                     all of the lefmost stems (5' side). This is a recursive
+                     function, so it is first called with the first stem in
+                     left_stems 
+       right_stems -- a list of stems, as described in find stems, that contains
+                     all of the rightmost stems (3' side). This is a recursive
+                     function, so it is first called with all the stems *except*
+                     the first one.
+       seq_length -- int containing the total length of the sequence.
+       
+       """
     if debug:
         print("combine_stems(%s, %s, %d, %d):" %
               (left_stems, right_stems, seq_length, depth))
 
+    # Bulge loops can contain no more than 20% of the total sequence
+    # lenght, if they do, then they aren't bulge loops.
     max_bulge_length = seq_length * .20
 
     assert len(left_stems) > 0
@@ -447,61 +431,36 @@ def combine_stems(left_stems, right_stems, seq_length, depth=0, debug=False):
     if len(right_stems) > 0:
         assert left_stems[-1]["lh"]["end"] < right_stems[0]["lh"]["start"]
 
-
-    # Determine if the "inner" stems can be joined
     if len(right_stems) < 1:
+        # If we have no right_stems, then return left_stems, since there is
+        # nothing to join
         if debug:
             print " combine_stems(): %d depth, no more right stems" % depth
         return left_stems
     elif (math.fabs(left_stems[-1]["lh"]["end"] - right_stems[0]["lh"]["start"]) <
           max_bulge_length):
-        # Looks like a bulge, join the two stems
+        # The length of this non-bound portion implies that this is a bulge loop
         if debug:
             print(" combine_stems(): %d depth, bulge loop, joining these stems\n"
                   "                : 1st stem end of lh side %d, 2nd stem start of"
                   " lh side %d" % (depth,
                                    left_stems[-1]["lh"]["end"],
                                    right_stems[0]["lh"]["start"]))
-
+        # Join across this non-bound portion
         left_stems[-1]["lh"]["end"] = right_stems[0]["lh"]["end"]
         left_stems[-1]["rh"]["start"] = right_stems[0]["rh"]["start"]
+        # Consider the next non-bound portion.
         del right_stems[0]
         return combine_stems(left_stems, right_stems, seq_length, depth + 1, debug)
     else:
-        # This is a hairpin, don't join the two stems
+        # This is a hairpin, don't join the two stems, but recursively
+        # consider the next unbound portion.
         left_stems.append(right_stems[0])
         del right_stems[0]
         if debug:
             print " combine_stems(): %d depth, not a bulge loop, not joining" % depth
         return combine_stems(left_stems, right_stems, seq_length, depth + 1, debug)
 
-
-def check_circular(fold):
-    """Given a fold, return true if if the fold is circular.
-    A fold is circular if the 5' base is bound to the 3' base
-
-    Arguments: 
-    fold --  a fold structure as shown in parse_ct
-
-    Returns:
-    boolean -- True if fold is circular
-    """
-
-    if fold["seq"][0]["upstream"] == "0" and fold["seq"][-1]["downstream"] == "0":
-        return False
-    else:
-        return True
-
-def format_fold_debug(fold):
-    """return a string with the binding pairs of the fold"""
-    return ''.join(["%3s" % i for i in range(1,len(fold["seq"]) + 1)] + ["\n"] +
-                   ["%3s" % x["bp"] for x in fold["seq"]] +
-                   ["\n"] + ["%3s" % x["nucl"] for x in fold["seq"]])
-
-def format_fold_seq(fold):
-    """return a string with the sequence as a string"""
-    return ''.join([x["nucl"] for x in fold["seq"]])
-    
 
 def check_recognition_stem(stemlh, stemrh, recognition, debug=False):
     """Given a stem, a recognition sequence to a stem, determine the
@@ -515,12 +474,17 @@ def check_recognition_stem(stemlh, stemrh, recognition, debug=False):
 
        Returns:
        float -- 0.0 - 1.0 that represents the percentage of the recognition
-                expressed as largest match divided by lenght of recognition
+                expressed as largest match divided by length of recognition
        """
     if debug:
-        print("check_recognition(): looking for %s with len %d in %s and %s" %
+        print("check_recognition_stem(): looking for %s with len %d in %s and %s" %
               (''.join(recognition), len(recognition),''.join(stemlh), ''.join(stemrh)))
 
+    # Consider every possible subsequence in recognition by iterating
+    # combinatorically through every start index and then for each
+    # start index consider each possible length of subsequence from
+    # that start for a match in either the lefthand (5') side or
+    # righthand (3') side of the stem.
     for start in range(len(recognition)):
         endrng = range(start + 1, len(recognition) + 1)
         endrng.reverse()
@@ -541,12 +505,6 @@ def check_recognition_stem(stemlh, stemrh, recognition, debug=False):
                 
             if(fealden.util.match(tuple(stemlh), tuple(tomatch)) or fealden.util.match(tuple(stemlh), tuple(tomatch[::-1])) or
                fealden.util.match(tuple(stemrh), tuple(tomatch)) or fealden.util.match(tuple(stemrh), tuple(tomatch[::-1]))):
-                # If we found a match, then return right away
-                # Don't forget get to make these floats.
-                # if len(recognition) > len(stemlh) or len(recognition) > len(stemrh):
-                #     maxlength = float(len(recognition))
-                # else:
-                #     maxlength = float(len(recognition))
                 maxlength = float(len(recognition))
                 percent = float(end - start) / maxlength
                 if debug:
@@ -558,9 +516,6 @@ def check_recognition_stem(stemlh, stemrh, recognition, debug=False):
         # No matches were found
         if debug: print "check_recognition_stem(): no matches found"
         return 0.0
-
-    # Didn't find any
-    return False
 
 def fluorophore_distance(stem1):
     """Returns distance from the fluorophore to the base
@@ -621,8 +576,6 @@ def quencher_distance(stem1, stem2 , quencher, debug = False):
               (stem2["lh"]["start"], stem2["lh"]["end"],
                stem2["rh"]["start"], stem2["rh"]["end"]))
 
-
-#    try:
     if quencher < stem1["lh"]["start"]:
         # Quencher is in the 5' tail and therefore
         # we use negative distances (since it is
@@ -652,21 +605,9 @@ def quencher_distance(stem1, stem2 , quencher, debug = False):
         distance = quencher - stem1["rh"]["end"]
     else:
         distance =100
-    #         raise DistanceError("Couldn't find quencher")
-    # except IndexError:
-    #      # Something was wrong with our indexes, possibly only one stem
-    #      # passed in
-    #      raise DistanceError("Indexing error, missing a stem?")
+
     return distance
 
-def pretty_format_stems(stems):
-    pretty = ""
-    for index,stem in enumerate(stems):
-        pretty += (" Stem %d lh: %d,%d rh: %d,%d\n" %
-                   (index, stem["lh"]["start"], stem["lh"]["end"],
-                   stem["rh"]["start"], stem["rh"]["end"]))
-
-    return pretty
                    
 
 
@@ -717,6 +658,15 @@ def fold_type(fold, recognition, quencher, debug=False):
          2. None of the stems contain less than 50% of the recognition
             sequence expressed sequentially
     """
+    if debug:
+        # Define a pretty printer for the stems, if needed
+        def pretty_format_stems(stems):
+            pretty = ""
+            for index,stem in enumerate(stems):
+                pretty += (" Stem %d lh: %d,%d rh: %d,%d\n" %
+                           (index, stem["lh"]["start"], stem["lh"]["end"],
+                            stem["rh"]["start"], stem["rh"]["end"]))
+            return pretty
 
     stems = find_stems(fold, False)
 
@@ -752,13 +702,11 @@ def fold_type(fold, recognition, quencher, debug=False):
         print("fold_type(): max_percent_match %f , len(stems) %d" %
               (max_percent_match, len(stems)))
 
-
-
     if max_percent_match <= .5:
-        # some sort of nonbinding structure
-        # Attempt to remove bulge loops
-        
+        # Doesn't look like this will bind to the recognition
         if len(stems) > 2:
+            # Attempt to remove bulge loops if we have more than
+            # two stems
             if debug:
                 print("fold_type(): before joining\n%s" %
                       pretty_format_stems(stems))
@@ -770,30 +718,27 @@ def fold_type(fold, recognition, quencher, debug=False):
                       pretty_format_stems(stems))
             
         if len(stems) == 2:
-            # Find distance between fluorophore and quencher, if possible
-            try:
-                distance = (quencher_distance(stems[0], stems[1],
-                                              quencher, debug) +
-                            fluorophore_distance(stems[0]))
-            except DistanceError:
+            # Now, if we have two stems, find distance between
+            # fluorophore and quencher, if possible
+            distance = (quencher_distance(stems[0], stems[1],
+                                          quencher, debug) +
+                        fluorophore_distance(stems[0]))
+
+            if distance < 4:
                 if debug:
-                    print "fold_type(): caught DistanceError, binding_unknown"
-                type = "binding_unknown"
+                    print("fold_type(): distance %d <4, valid nonbinding_off" % distance)
+                type = "nonbinding_off"
             else:
-                if distance < 4:
-                    if debug:
-                        print("fold_type(): distance %d <4, valid nonbinding_off" % distance)
-                    type = "nonbinding_off"
-                else:
-                    if debug:
-                        print "fold_type(): distance %d, nonbinding_unknown" % distance
-                    type = "nonbinding_unknown"
+                if debug:
+                    print "fold_type(): distance %d, nonbinding_unknown" % distance
+                type = "nonbinding_unknown"
         else:
+            # Not the right number of folds
             if debug: print "fold_type(): too many stems, nonbinding_unknown"
             type = "nonbinding_unknown"
     elif max_percent_match == 1.0:
         # some sort of binding structure
-        # First merge stems seperated by bulge loops
+        # Attempt to remove any bulge loops
         stems = combine_stems(stems[:1], stems[1:],
                               len(fold["seq"]), 0, debug)
         if len(stems) == 1:
@@ -806,12 +751,6 @@ def fold_type(fold, recognition, quencher, debug=False):
         type = "binding_unknown"
     return type
 
-def pretty_fold(fold):
-    results = ""
-
-    results += ''.join(["%3s" % i for i in range(1,len(fold["seq"]) + 1)]
-                       + ["\n"] + ["%3s" % x["bp"] for x in fold["seq"]] +
-                   ["\n"] + ["%3s" % x["nucl"] for x in fold["seq"]])
 
 def score_sensor(sensor, folds):
     """Return the scores for a folded sensor
@@ -821,7 +760,7 @@ def score_sensor(sensor, folds):
        folds -- a folds dict as returned by parse_ct
        
        Returns:
-       dictionary 
+       dictionary = { fold_type: 'percent', ... }
        """
 
     total = sum([ math.exp(math.fabs(fold["energy"])) for fold in folds])
@@ -860,6 +799,8 @@ def score_sensor(sensor, folds):
 def validate_sensor(sensor, scores, folds, bindingratiorange=(.9,1.1),
                     maxunknownpercent=.2, numfoldrange=None, maxenergy=None):
     """
+    Determines if a given sensor is a valid solution
+
     Arguments:
     sensor -- a util.Sensor
     scores -- as returned by unafold.score_sensor
@@ -979,4 +920,3 @@ def validate_sensor(sensor, scores, folds, bindingratiorange=(.9,1.1),
         logger.debug("unafold.validate_sensor(%s): found invalid solution" %
                      (sensor))
         return False
-
