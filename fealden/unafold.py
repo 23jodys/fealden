@@ -763,11 +763,12 @@ def score_sensor(sensor, folds):
        dictionary = { fold_type: 'percent', ... }
        """
 
-    total = sum([ math.exp(math.fabs(fold["energy"])) for fold in folds])
+    # e^(|dG|/RT)
+    total = sum([ math.exp(math.fabs(fold["energy"])/2.47) for fold in folds])
 
     for fold in folds:
         fold["type"] = fold_type(fold, sensor.Recognition, sensor.QuencherIndex())
-        fold["percent_in_solution"] = math.exp(math.fabs(fold["energy"])) / total
+        fold["percent_in_solution"] = math.exp(math.fabs(fold["energy"])/2.47) / total
 
     scores = { "binding_on": { "percent": sum([fold["percent_in_solution"]
                                                for fold in folds
