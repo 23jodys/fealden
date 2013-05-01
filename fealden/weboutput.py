@@ -138,6 +138,8 @@ def plot_gain(deltaG, sensor, location="/var/fealden/solutions/", debug=False):
     """Plots the gain of a sensor for different affinities"""
     #debug = True
 
+    # This should take ks directly
+
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
 
