@@ -495,11 +495,12 @@ class RequestElement():
 
     def __str__(self):
         return ("CMD: %s, REC: %s, EMAIL: %s, MAXT: %s, DIR: %s, "
-                "LO: %s, HI: %s, MAX: %s" %
+                "#LO: %s, #HI: %s, RATIO_LO:%s, RATIO_HI:%s, MAX: %s" %
                 (self.command, self.recognition,
                  self.email, self.maxtime,
                  self.output_dir,
                  self.numfolds_lo, self.numfolds_hi,
+                 self.binding_ratio_lo, self.binding_ratio_hi,
                  self.maxenergy))
     def valid(self):
         """Determines if this request is valid, according to the specification
