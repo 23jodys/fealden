@@ -446,7 +446,7 @@ class OutputElement():
         
     
 class RequestElement():
-    def __init__(self, command=None, recognition=None, email=None, maxtime=None,
+    def __init__(self, command, request_id, recognition=None, email=None, maxtime=None,
                  output_dir=None, binding_ratio_lo=None, binding_ratio_hi=None,
                  maxunknown_percent=None, numfolds_lo=None, numfolds_hi=None,
                  maxenergy = None, numsolutions = 1 ):
@@ -455,6 +455,8 @@ class RequestElement():
 
            Arguments:
            command -- Required
+           request_id -- Required, a unique id that is specific to a given search
+                         request, it is not unique for each solution.
            recognition -- Required
            email -- Optional for all
            maxtime -- optional for all
@@ -476,6 +478,7 @@ class RequestElement():
              to it's response. Note: this needs to be negative
         """
         self.command = command
+        self.request_id = request_id
         self.recognition = recognition
         self.email = email
         self.maxtime = maxtime
@@ -522,8 +525,14 @@ class RequestElement():
                 recognition = False
         else:
             logger.debug("RequestElement.valid(): BAD - no recognition")
+            recognition = False
 
-
+        if self.request_id:
+            logger.debug("RequestElement.valid(): GOOD - request_id %s found" %
+                         self.request_id)
+            recognition = True
+        else:
+            logger.debug("RequestElement.valid(): BAD - no request_id found")
             recognition = False
 
         if self.command:

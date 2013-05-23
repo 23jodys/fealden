@@ -305,6 +305,7 @@ def DirectoryQueue_test():
 
 def RequestElement_test_generator():
     tests = ( {"command": "BACKTRACKING",
+               "request_id": "2345AFG^&%$^",
                "email": "test@example.com",
                "output_dir": "/tmp/tmp12",
                "maxtime": 34,
@@ -319,6 +320,7 @@ def RequestElement_test_generator():
                "valid": True,
                "purpose": "all parameters correct"},
               {"command": "BACTRACKING",
+               "request_id": "2345AFG^&%$^",
                "email": "test@example.com",
                "output_dir": "/tmp/tmp12",
                "maxtime": 34,
@@ -333,6 +335,7 @@ def RequestElement_test_generator():
                "valid": False,
                "purpose": "bad command"},
               {"command": "BACKTRACKING",
+               "request_id": "2345AFG^&%$^",
                "email": None,
                "output_dir": "/tmp/tmp12",
                "maxtime": 34,
@@ -347,6 +350,7 @@ def RequestElement_test_generator():
                "valid": True,
                "purpose": "only one numfolds set"},
               {"command": "BACKTRACKING",
+               "request_id": "2345AFG^&%$^",
                "email": None,
                "output_dir": "/tmp/tmp12",
                "maxtime": None,
@@ -361,6 +365,7 @@ def RequestElement_test_generator():
                "valid": False,
                "purpose": "bad maxenergy"},
               {"command": "BACKTRACKING",
+               "request_id": "2345AFG^&%$^",
                "email": None,
                "output_dir": "ATET%GASFG",
                "maxtime": None,
@@ -376,6 +381,7 @@ def RequestElement_test_generator():
                "purpose": "malformed directory"},
 
               {"command": "BACKTRACKING",
+               "request_id": "2345AFG^&%$^",
                "email": "test@example.com",
                "output_dir": "/tmp/tmp12",
                "maxtime": 34,
@@ -390,6 +396,7 @@ def RequestElement_test_generator():
                "valid": False,
                "purpose": "binding ratio only hi, no lo"},
               {"command": "BACKTRACKING",
+               "request_id": "2345AFG^&%$^",
                "email": "test@example.com",
                "output_dir": "/tmp/tmp12",
                "maxtime": 34,
@@ -404,6 +411,7 @@ def RequestElement_test_generator():
                "valid": False,
                "purpose": "binding ratio lo > hi"},
               {"command": "BACKTRACKING",
+               "request_id": "2345AFG^&%$^",
                "email": "test@example.com",
                "output_dir": "/tmp/tmp12",
                "maxtime": 34,
@@ -418,6 +426,7 @@ def RequestElement_test_generator():
                "valid": False,
                "purpose": "max unknown not a percentage"},
               {"command": "BACKTRACKING",
+               "request_id": "2345AFG^&%$^",
                "email": "test@example.com",
                "output_dir": "/tmp/tmp12",
                "maxtime": 34,
@@ -431,6 +440,21 @@ def RequestElement_test_generator():
                "maxenergy": -3.4,
                "valid": False,
                "purpose": "binding ratio hi, but no lo"},
+              {"command": "BACKTRACKING",
+               "request_id": False,
+               "email": "test@example.com",
+               "output_dir": "/tmp/tmp12",
+               "maxtime": 34,
+               "recognition": "ATTA",
+               "numfolds_lo": 2,
+               "numfolds_hi": 2,
+               "binding_ratio_lo": 0.8,
+               "binding_ratio_hi": 1.2,
+               "maxunknown_percent": .2,
+               "maxenergy": -3.4,
+               "numsolutions": 1,
+               "valid": False,
+               "purpose": "missing request_id"}
               )
 
     def tester(testdict):
@@ -438,6 +462,7 @@ def RequestElement_test_generator():
             os.makedirs(testdict["output_dir"])
  
         testel = util.RequestElement(command=testdict["command"],
+                                     request_id=testdict["request_id"],
                                      email=testdict["email"],
                                      output_dir=testdict["output_dir"],
                                      maxtime=testdict["maxtime"],
