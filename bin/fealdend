@@ -45,19 +45,18 @@ def main():
     # coming in for searches from any number of front ends. Each
     # request will be verified and then written to a request queue
     # that all workers performing searches will be watching.
+    workqueue_dir = "/var/fealden/workqueue"
+    logger.info("fealdend: opening workqueue %s" % (workqueue_dir))
+    workqueue = util.DirectoryQueue(workqueue_dir)
     while True:
-        workqueue_dir = "/var/fealden/workqueue"
-        logger.info("fealdend: opening workqueue %s" % (workqueue_dir))
-        workqueue = util.DirectoryQueue(workqueue_dir)
-        while True:
-            # Read until queue is empty, blocking
-            request = workqueue.get()
-            if request.valid() and isinstance(request, util.RequestElement):
-                logger.info("fealdend: adding %s for %s to request_q" %
-                            (request.command, request.recognition))
-                request_q.put(request)
-            else:
-                logger.info("fealdend: received bad request on request_q: %s" % request)
+        # Read until queue is empty, blocking
+        request = workqueue.get()
+        if request.valid() and isinstance(request, util.RequestElement):
+            logger.info("fealdend: adding %s for %s to request_q" %
+                        (request.command, request.recognition))
+            request_q.put(request)
+        else:
+            logger.info("fealdend: received bad request on request_q: %s" % request)
 
 if __name__ == '__main__':
     #    with context:
