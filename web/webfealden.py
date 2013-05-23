@@ -89,6 +89,14 @@ class index:
         # Clean up forms data to remove attr for the 'Run' button
         new_attrs = dict(form.d)
         del new_attrs["Run"]
+
+        tofloats = [ "binding_ratio_lo", "binding_ratio_hi", "maxenergy", "maxunknown_percent" ]
+        for el in tofloats:
+            new_attrs[el] = float(new_attrs[el])
+
+        toints = [ "numfolds_lo", "numfolds_hi"]
+        for el in toints:
+            new_attrs[el] = int(new_attrs[el])
         
         request = util.RequestElement(command="BACKTRACKING",
                                       request_id=unique_id.hex,
