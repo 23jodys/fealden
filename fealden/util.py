@@ -233,6 +233,8 @@ class SolutionElement():
        sensorsearch.
 
        Arguments:
+       request_id -- a unique id that is specific to a given search
+                     request, it is not unique for each solution.
        command -- Required, (SOLUTION|PRUNED|DEPTH)
        sensor -- if command == solution: sensor is required
        scores -- if command == solution: scores is required
@@ -242,8 +244,9 @@ class SolutionElement():
                 likewise everytime a node is pruned, its depth is
                 recorded
        """
-    def __init__(self, command, sensor=None, scores=None,
+    def __init__(self, command, request_id, sensor=None, scores=None,
                  folds=None, depth=None):
+        self.request_id = request_id
         self.command = command
         self.sensor = sensor
         self.scores = scores
@@ -270,7 +273,14 @@ class SolutionElement():
         scores = False
         folds = False
         pruned = False
+        request_id = False
         logger.debug("SolutionElement(): %s" % (self))
+
+        if self.request_id:
+            request_id = True
+        else:
+            request_id = False
+        
         if self.command=="SOLUTION":
             logger.debug("SolutionElement(): GOOD - CMD: %s is good" % self.command)
             command = True
@@ -322,7 +332,7 @@ class SolutionElement():
             logger.debug("SolutionElement(): GOOD - CMD: %s is good" % self.command)
             command = False
 
-        if (command and scores and sensor and folds) or (command and depth) or (command and pruned):
+        if request_id and ((command and scores and sensor and folds) or (command and depth) or (command and pruned)):
             return True
         else:
             return False
