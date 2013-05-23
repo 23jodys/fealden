@@ -469,12 +469,14 @@ def OutputElement_test_generator():
                "sensor": True,
                "scores": True,
                "folds": True,
+               "request_id": "AGTQWERT",
                "output_dir": tempfile.mkdtemp(),
                "email": None,
                "valid": True,
                "purpose": "valid parameters"},
               {"command": "WEBOUTPUT",
                "status": "FAILED",
+               "request_id": "AGTQWERT",
                "sensor": True,
                "scores": True,
                "folds": True,
@@ -485,6 +487,7 @@ def OutputElement_test_generator():
               {"command": "WEBOUTPUT",
                "status": "FAILED",
                "sensor": True,
+               "request_id": "AGTQWERT",
                "scores": True,
                "folds": True,
                "output_dir": "/tmp/shouldnotexist",
@@ -495,6 +498,7 @@ def OutputElement_test_generator():
                "status": "FAILED",
                "sensor": True,
                "scores": True,
+               "request_id": "AGTQWERT",
                "folds": True,
                "output_dir": None,
                "email": None,
@@ -504,6 +508,7 @@ def OutputElement_test_generator():
                "status": "FOUND",
                "sensor": True,
                "scores": True,
+               "request_id": "AGTQWERT",
                "folds": True,
                "output_dir": tempfile.mkdtemp(),
                "email": None,
@@ -513,6 +518,7 @@ def OutputElement_test_generator():
                "status": "ND",
                "sensor": True,
                "scores": True,
+               "request_id": "AGTQWERT",
                "folds": True,
                "output_dir": tempfile.mkdtemp(),
                "email": None,
@@ -522,6 +528,7 @@ def OutputElement_test_generator():
                "status": False,
                "sensor": True,
                "scores": True,
+               "request_id": "AGTQWERT",
                "folds": True,
                "output_dir": tempfile.mkdtemp(),
                "email": None,
@@ -532,6 +539,7 @@ def OutputElement_test_generator():
                "sensor": True,
                "scores": False,
                "folds": True,
+               "request_id": "AGTQWERT",
                "output_dir": tempfile.mkdtemp(),
                "email": None,
                "valid": False,
@@ -539,23 +547,26 @@ def OutputElement_test_generator():
               {"command": None,
                "status": None,
                "sensor": True,
+               "request_id": "AGTQWERT",
                "scores": True,
                "folds": True,
+               "request_id": "AGTQWERT",
                "output_dir": tempfile.mkdtemp(),
                "email": None,
                "valid": False,
                "purpose": "missing command and status"},
-)
-
+        )
+    
     def tester(testdict):
         try:
             element = util.OutputElement(command=testdict["command"],
-                                                 status=testdict["status"],
-                                                 sensor=testdict["sensor"],
-                                                 scores=testdict["scores"],
-                                                 folds=testdict["folds"],
-                                                 output_dir=testdict["output_dir"],
-                                                 email=testdict["email"])
+                                         request_id =testdict["request_id"],
+                                         status=testdict["status"],
+                                         sensor=testdict["sensor"],
+                                         scores=testdict["scores"],
+                                         folds=testdict["folds"],
+                                         output_dir=testdict["output_dir"],
+                                         email=testdict["email"])
         except:
             logger.debug("OutputElementTest(): BAD - init failed with %s" %
                          sys.exc_info()[0])

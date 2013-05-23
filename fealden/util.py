@@ -233,7 +233,7 @@ class SolutionElement():
        sensorsearch.
 
        Arguments:
-       request_id -- a unique id that is specific to a given search
+       request_id -- Required, a unique id that is specific to a given search
                      request, it is not unique for each solution.
        command -- Required, (SOLUTION|PRUNED|DEPTH)
        sensor -- if command == solution: sensor is required
@@ -341,6 +341,8 @@ class OutputElement():
 
     Arguments:
     command -- REQUIRED
+    request_id -- Required, a unique id that is specific to a given search
+    request, it is not unique for each solution.
     status -- REQUIRED
     output_dir -- REQUIRED
     sensor -- Required for (WEBOUTPUT:FOUND), a util.Sensor of the solution
@@ -348,10 +350,11 @@ class OutputElement():
     folds -- Required for (WEBOUTPUT:FOUND), the sensor's foldings
     email -- Optional
     """
-    def __init__(self, command, status, output_dir,
+    def __init__(self, command, request_id, status, output_dir,
                  sensor = None, scores = None,  
                  folds = None, email = None):
         self.command = command
+        self.request_id = request_id
         self.status = status
         self.output_dir = output_dir
         self.sensor = sensor
@@ -384,7 +387,17 @@ class OutputElement():
            False otherwise
            """
         command = False
+        request_id = False
+        dirtest = False
 
+        if self.request_id:
+            request_id = True
+            logger.debug("OutputElement(): GOOD -- request_id found: %s" % self.request_id)
+        else:
+            request_id = False
+            logger.debug("OutputElement(): GOOD -- no request_id found:")
+            
+                                
         if self.command and self.command == "WEBOUTPUT":
             if self.status and self.status == "FOUND":
                 if self.sensor and self.scores and self.folds:
@@ -412,20 +425,21 @@ class OutputElement():
             logger.debug("OutputElement(): BAD -- No CMD")
             command = False
 
+
         if self.output_dir:
             if os.path.isdir(self.output_dir):
                 logger.debug("OutputElement(): GOOD -- output_dir %s exists" %
                              self.output_dir)
-                dir = True
+                dirtest = True
             else:
                 logger.debug("OutputElement(): BAD -- output_dir %s does not exist" %
                              self.output_dir)
-                dir = False
+                dirtest = False
         else:
             logger.debug("OutputElement(): BAD -- no output_dir specified")
-            dir = False
+            dirtest = False
 
-        if command and dir:
+        if command and dirtest and request_id:
             return True
         else:
             return False
