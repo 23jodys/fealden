@@ -104,20 +104,21 @@ def solution_output(sensor, scores, folds, output_dir):
                  (sensor, output_dir))
 
     # Generate sensor gain graph
-    binding_kj = sum([ x["percent_in_solution"] *
-                       math.exp(x["energy"])
-                       for x in folds
-                       if x["type"] == "binding_on" or
-                       x["type"] == "binding_unknown"])
-    nonbinding_kj = sum([ x["percent_in_solution"] * x["energy"]
-                          for x in folds
-                          if x["type"] == "nonbinding_off" or
-                          x["type"] == "badnonbind"])
-    logger.debug("solution_output(%s, %s): binding_kj = %f nonbinding_kj = %f" %
-              (sensor, output_dir, binding_kj, nonbinding_kj))
-    
-    plot_gain(binding_kj - nonbinding_kj, sensor, output_dir)
-    #sensor_plot.gain(-4.0, seq, output_dir)
+    binding_percent = 0
+    nonbinding_percent = 0
+    for fold in folds:
+        if fold["type"] == 'binding_on' or fold["type"] == 'binding_unknown':
+            binding_percent += fold["percent_in_solution"]
+        elif fold["type"] == 'nonbinding_off' or fold["type"] == 'nonbinding_unknown':
+            nonbinding_percent += fold["percent_in_solution"]
+            
+    logger.debug("solution_output(%s, %s): binding_percent = %f nonbinding_percent = %f" %
+              (sensor, output_dir, binding_percent, nonbinding_percent))
+    if nonbinding_percent > 0:
+        Ks = binding_percent / nonbinding_percent
+    else:
+        Ks = 0
+    plot_gain(Ks, sensor, output_dir)
 
     # Pickle output of backtracking search into output_dir
     # The pickled output serves as a signal to the web frontend
@@ -134,33 +135,28 @@ def solution_output(sensor, scores, folds, output_dir):
     return True
 
 
-def plot_gain(deltaG, sensor, location="/var/fealden/solutions/", debug=False):
+def plot_gain(Ks, sensor, location="/var/fealden/solutions/", debug=False):
     """Plots the gain of a sensor for different affinities"""
-    #debug = True
-
-    # This should take ks directly
-
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
 
     x = np.logspace(-10, -3, num=50)
-    ks = np.e**(-(deltaG / (298 * 0.008314)))
 
     logger = logging.getLogger("fealden.weboutput.plot_gain")
-    logger.debug("sensor_plot.gain(%f, %s, %s): ks calculated as %f" %
-              (deltaG, sensor, location, ks))
+    logger.debug("sensor_plot.gain(%f, %s, %s)" %
+                (Ks, sensor, location))
     
     toplot = np.logspace(-9,-4, 6)
 
     colors = ['b','g','r','c','m','k']
 
     for affinity in toplot:
-        plt.plot(x, (ks * x)/(affinity * (1+ks) + ks * x), "%s-" % (colors.pop()), label = affinity)
+        plt.plot(x, (Ks * x)/(affinity * (1+Ks) + Ks * x), "%s-" % (colors.pop()), label = affinity)
     
     plt.xscale('log')
 
     ax.legend(loc="center left", bbox_to_anchor=[0.5, 0.5],
-               ncol=2, shadow=True, title="Affinity with deltaG = %f" %(deltaG))
+               ncol=2, shadow=True, title="Affinity with K_s = %f" %(Ks))
     ax.set_xlabel('Transcription Factor Concentration (M)')
     ax.set_ylabel('Predicted Sensor Gain')
 

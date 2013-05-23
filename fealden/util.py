@@ -49,7 +49,6 @@ def match(seql, tomatch):
     matches = [x for x in range(len(seql)) if seql[x:(x + len(tomatch))] == tomatch]
     return matches
 
-
 class Sensor:
     """Contains the DNA string for a sensor, as well as all
     structural elements associated with it, e.g. the location of
