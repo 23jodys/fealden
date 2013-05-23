@@ -91,18 +91,20 @@ def searchworker_queue_test_generator():
 
 
     tests = (
-        ("BACKTRACKING", "ATTA", "/tmp/test", "test@example.com", 60,RequestQueueBacktrackingException),
-        ("BACKDDFD", "ATTA", "/temp/test", "test@example.com", 60,RequestQueueUnknownException),
-        ("BACKTRACKING", "ATGCGTATGCGTAAAGTC", "/temp/test", "test@example.com", 60,RequestQueueBacktrackingException))
-               
+        ("BACKTRACKING", "ATTA", "345RTW", "/tmp/test", "test@example.com", 60,RequestQueueBacktrackingException),
+        ("BACKDDFD", "ATTA", "345RTW", "/temp/test", "test@example.com", 60,RequestQueueUnknownException),
+        ("BACKTRACKING", "ATGCGTATGCGTAAAGTC", "345RTW", "/temp/test", "test@example.com", 60,RequestQueueBacktrackingException))
+    
     for test in tests:
+        
         request = util.RequestElement(command=test[0],
-                                              recognition=test[1],
-                                              output_dir=test[2],
-                                              email=test[3],
-                                              maxtime=test[4])
+                                      recognition=test[1],
+                                      request_id = test[2],
+                                      output_dir=test[3],
+                                      email=test[4],
+                                      maxtime=test[5])
 
-        yield _searchworker_tester, request, test[5]
+        yield _searchworker_tester, request, test[6]
 
 def solutionworker_queue_test_generator():
     def _solutionworker_tester(output_request, expectedexception):
@@ -136,8 +138,9 @@ def solutionworker_queue_test_generator():
     # (FOUND/FAILED, solution, output_directory, email)
     tests = (
         ( util.OutputElement(command="WEBOUTPUT", status="FOUND",
-                                     sensor="ATTCGATATAT", output_dir="/tmp/test/",
-                                     email="test@example.com"),
+                             sensor="ATTCGATATAT", output_dir="/tmp/test/",
+                             request_id = "TAGAY56456356",
+                             email="test@example.com"),
           SolutionQueueFoundException),)
 
     for test in tests:

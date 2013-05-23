@@ -35,6 +35,7 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
                              (os.getpid(),request.recognition))
                 # (FOUND/FAILED, solution, output_directory, email)
                 output_request = util.OutputElement(command="WEBOUTPUT",
+                                                    unique_id=request.unique_id,
                                                     status="FOUND",
                                                     output_dir= request.output_dir,
                                                     sensor = solution.sensor,
@@ -51,6 +52,7 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
                          (os.getpid(), request.recognition))
             output_request = util.OutputElement(command="WEBOUTPUT",
                                                 status="FAILED",
+                                                unique_id=request.unique_id,
                                                 output_dir= request.output_dir,
                                                 email = request.email)
             output_q.put(output_request)

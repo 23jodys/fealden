@@ -298,6 +298,7 @@ def find_stems_make_case(seq, foldnum, comment):
     tosave.close()
 
 
+@nottest
 def score_sensor_test_generator():
     def _run_score_sensor(sensor, folds, expected_scores):
         scores = unafold.score_sensor(sensor, folds)
