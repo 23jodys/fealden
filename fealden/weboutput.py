@@ -1,14 +1,17 @@
+import glob
+import itertools
 import logging
 import math
-import tempfile
-import os
-import glob
-import shutil
-import pickle
-import subprocess
-import numpy as np
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import itertools
+import numpy as np
+import os
+import pickle
+import shutil
+import subprocess
+import tempfile
 
 logger = logging.getLogger(__name__)
 

@@ -1,0 +1,15 @@
+This code depends on
+
+UNAfold 3.8
+
+Python Libraries: 
+setproctitle
+python-daemon
+parseargs
+numpy
+
+Other Tools:
+matplotlib
+
+For Developers:
+nosetests
