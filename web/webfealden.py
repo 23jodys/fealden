@@ -23,7 +23,7 @@ myform = form.Form(
     form.Textbox('maxunknown_percent', description='Max percentage of folds that cannot be categorized', value=.1, id="maxunknown_percent"),
     form.Textbox('binding_ratio_lo', description='Lower bound for ratio of binding foldings vs. nonbinding foldings', value=.9, id="binding_ratio_lo"),
     form.Textbox('binding_ratio_hi', description='Upper bound for ratio of binding foldings vs. nonbinding foldings', value=1.1, id="binding_ratio_hi"),
-    form.Textbox('maxenergy', description='Maximum additional energy (kJ/mol)', value=5.0, id="maxenergy"),
+    form.Textbox('maxenergy', description='Maximum additional energy (kJ/mol)', value=-5.0, id="maxenergy"),
     #    form.Textbox("email", description='(optional) email to recieve notifications at',
     #             id="email"),
     form.Button("Run", type="submit")
