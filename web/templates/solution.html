@@ -1,15 +1,15 @@
-$def with (sensor,scores,folds)
+$def with (sensor,scores,folds, request_id)
 
-<h1> Solution for $sensor.GetRecognition()</h1>
+<h1> Solution for $(sensor.GetRecognition())</h1>
 $sensor
 
 <h2>Sensor Gain</h2>
-<img src="/solution_images/$(sensor.GetRecognition())/$(sensor)_gain.png">
+<img src="/solution_images/$(request_id)/$(sensor)_gain.png">
 
 <h2>Structures formed</h2>
 $for i in range(1, len(folds) + 1):
-    <a href="/solution_images/$sensor.GetRecognition()/$(sensor)_$(i).png">
-    <img src="/solution_images/$sensor.GetRecognition()/$(sensor)_$(i)_t.png"></a>
+    <a href="/solution_images/$(request_id)/$(sensor)_$(i).png">
+    <img src="/solution_images/$(request_id)/$(sensor)_$(i)_t.png"></a>
 
 <h2>Structure types</h2>
 <ul>
@@ -20,5 +20,5 @@ $for i in range(1, len(folds) + 1):
 </ul>
 <h2>Box Plot</h2>
 
-<img src="/solution_images/$sensor.GetRecognition()/$(sensor).png">
+<img src="/solution_images/$(request_id)/$(sensor).png">
 

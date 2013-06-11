@@ -11,12 +11,7 @@ import copy
 from fealden.util import *
 from fealden import unafold
 
-logger = logging.getLogger('fealden.backtracking')
-#logger.setLevel(logging.DEBUG)
-#handler = logging.FileHandler("test.log")
-#handler.setLevel(logging.DEBUG)
-#logger.addHandler(handler)
-
+logger = logging.getLogger(__name__)
 
 def sensorsearch(sensor, maxtime, bindingratiorange=None,
                  maxunknownpercent=None, maxsolutions=None,
@@ -83,7 +78,7 @@ def sensorsearch(sensor, maxtime, bindingratiorange=None,
         result = recognition_queue.get(block=True)
 
         if not result.valid():
-            logger.debug("sensorsearch(...): QUEUE -- INVALID %s" %
+            logger.info("sensorsearch(...): QUEUE -- INVALID %s" %
                          (result))
 
         elif result.command == "SOLUTION":
@@ -91,19 +86,19 @@ def sensorsearch(sensor, maxtime, bindingratiorange=None,
             # our list of solutions
             logger.debug("sensorsearch(...): QUEUE -- SOLUTION(%s, len(scores) = %d, len(folds) = %d)" %
                          (result.sensor, len(result.scores), len(result.folds)))
-            if unafold.validate_sensor(result.command, result.scores, result.folds,
+            if unafold.validate_sensor(result.sensor, result.scores, result.folds,
                                        bindingratiorange=bindingratiorange,
                                        maxunknownpercent=maxunknownpercent,
                                        numfoldrange=numfoldrange,
                                        maxenergy=maxenergy):
-                logger.debug("sensorsearch(...): QUEUE -- VALID SOLUTION %s" % result.command)
+                logger.info("sensorsearch(...): QUEUE -- VALID SOLUTION %s" % result.command)
                 solutions.append(result)
                 #solutions.append((result[1], result[2], result[3]))
                 if len(solutions) == maxsolutions:
                     command.value = 0
                     break
             else:
-                logger.debug("sensorsearch(...): QUEUE -- INVALID SOLUTION %s" % result.sensor)
+                logger.info("sensorsearch(...): QUEUE -- INVALID SOLUTION %s" % result.sensor)
         elif result.command == "PRUNED":
             # Add depth to list of nodes pruned
             logger.debug("sensorsearch(...): QUEUE -- PRUNED(%d)" %
@@ -111,7 +106,7 @@ def sensorsearch(sensor, maxtime, bindingratiorange=None,
             pruned.append(result)
         elif result.command == "DEPTH":
             if result.depth > maxdepth:
-                logger.debug("sensorsearch(...): QUEUE -- DEPTH(%d) is now maxdepth "
+                logger.info("sensorsearch(...): QUEUE -- DEPTH(%d) is now maxdepth "
                              % (result.depth))
                 maxdepth = result.depth
             else:
@@ -153,7 +148,7 @@ def checknode(sensor, depth, recognition_q, command):
     # Check command queue
     #checknode_logger.debug(" checknode(%s, %d): command is %d" % (sensor,command.value)
     if command.value == 0:
-        checknode_logger.debug(" checknode(%s, %d): command is 0, returning True" %
+        checknode_logger.info(" checknode(%s, %d): command is 0, returning True" %
                  (sensor, depth))
         return True
     

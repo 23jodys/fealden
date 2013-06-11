@@ -15,7 +15,7 @@ def solution_output_test_generator():
         badtest = False
         temp_dir = tempfile.mkdtemp()
 
-        weboutput.solution_output(sensor, [],[], temp_dir)
+        weboutput.solution_output(sensor, [], [], temp_dir)
 
         print("SOLUTION_OUTPUT_TEST: temp dir is %s" % (temp_dir))
 

@@ -719,15 +719,7 @@ def SolutionElement_test_generator():
                "request_id": "AFAF",
                "depth": None,
                "purpose": "invalid command",
-               "valid": False},
-              {"command": "SOLUTION",
-               "sensor": True,
-               "scores": True,
-               "folds": True,
-               "depth": -3,
-               "request_id": False,
-               "purpose": "all good parametrs, but missing request_id",
-               "valid": False},
+               "valid": False}
               )
 
     def tester(testdict):

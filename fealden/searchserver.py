@@ -7,7 +7,7 @@ import tempfile
 import time
 from fealden import util, backtracking, weboutput
 
-logger = logging.getLogger("fealden.searchserver")
+logger = logging.getLogger(__name__)
 
 def searchworker(request_q, output_q, cmd_dictionary=None):
     setproctitle("fealdend: searchworker")
@@ -16,6 +16,7 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
                     (os.getpid(), request.recognition))
         # Do the search
         sensor = util.Sensor(request.recognition)
+        logger.info("sensor.Recognition is %s" % sensor.GetRecognition())
         setproctitle("fealdend: searchworker(%s)" % sensor.GetRecognition())
         solutions = backtracking.sensorsearch(sensor, request.maxtime,
                                               bindingratiorange = (request.binding_ratio_lo, request.binding_ratio_hi),
@@ -35,7 +36,7 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
                              (os.getpid(),request.recognition))
                 # (FOUND/FAILED, solution, output_directory, email)
                 output_request = util.OutputElement(command="WEBOUTPUT",
-                                                    unique_id=request.unique_id,
+                                                    request_id=request.request_id,
                                                     status="FOUND",
                                                     output_dir= request.output_dir,
                                                     sensor = solution.sensor,
@@ -52,7 +53,7 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
                          (os.getpid(), request.recognition))
             output_request = util.OutputElement(command="WEBOUTPUT",
                                                 status="FAILED",
-                                                unique_id=request.unique_id,
+                                                request_id=request.request_id,
                                                 output_dir= request.output_dir,
                                                 email = request.email)
             output_q.put(output_request)
@@ -119,7 +120,8 @@ def solutionworker(output_q,cmd_dictionary=None):
                                       output_request.output_dir)
             #email_notification(request[0], recognition, request[3])
         elif output_request.status == "FAILED":
-            weboutput.failed_output(output_request.sensor)
+            weboutput.failed_output(output_request.sensor,
+                                    output_request.output_dir)
             logger.debug("solutionworker (%d): FAILED received for %s" %
                         (os.getpid(), output_request.sensor))
         else:

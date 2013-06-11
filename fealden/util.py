@@ -7,7 +7,7 @@ import time
 
 from fealden import unafold
 
-logger = logging.getLogger('fealden.util')
+logger = logging.getLogger(__name__)
 
 def complement(seq):
     """Quick helper function to calculate DNA sequence's complement.
@@ -244,7 +244,7 @@ class SolutionElement():
                 likewise everytime a node is pruned, its depth is
                 recorded
        """
-    def __init__(self, command, request_id, sensor=None, scores=None,
+    def __init__(self, command, request_id=None, sensor=None, scores=None,
                  folds=None, depth=None):
         self.request_id = request_id
         self.command = command
@@ -332,7 +332,8 @@ class SolutionElement():
             logger.debug("SolutionElement(): GOOD - CMD: %s is good" % self.command)
             command = False
 
-        if request_id and ((command and scores and sensor and folds) or (command and depth) or (command and pruned)):
+            #        if request_id and ((command and scores and sensor and folds) or (command and depth) or (command and pruned)):
+        if (command and scores and sensor and folds) or (command and depth) or (command and pruned):
             return True
         else:
             return False
@@ -667,6 +668,8 @@ class DirectoryQueue():
         Returns:
         the item stored
         """
+        logger = logging.getLogger(__name__)
+
         if not os.path.isdir(self.directory):
             raise DirectoryQueueDirectoryError("%s has disappeared, giving up" %
                                                self.directory)
@@ -677,6 +680,7 @@ class DirectoryQueue():
             if files:
                 file = files.pop()
                 fullfile = os.path.join(self.directory,file)
+                logger.info("attempting to open %s" % fullfile)
                 request = pickle.load(open(fullfile))
                 os.remove(fullfile)
                 return request

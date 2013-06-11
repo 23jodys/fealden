@@ -19,18 +19,28 @@ context = daemon.DaemonContext(
         )
 
 def main():
-    # f2 = logging.getLogger('fealden.searchserver')
-    # f2.setLevel(logging.INFO)
-    bl = logging.getLogger('unafold')
-    bl.setLevel(logging.INFO)
-    logger = logging.getLogger('fealden')
-    #logger.setLevel(logging.INFO)
-    logger.setLevel(logging.DEBUG)
-    handler = logging.FileHandler("/var/fealden/fealdend.log")
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    default_formatter = logging.Formatter(\
+        "%(asctime)s:%(levelname)s:%(name)s:%(message)s")
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.ERROR)
+    console_handler.setFormatter(default_formatter)
+
+    error_handler = logging.FileHandler("/var/fealden/fealdend.log", "a")
+    error_handler.setLevel(logging.DEBUG)
+    error_handler.setFormatter(default_formatter)
+
+    rootlogger = logging.getLogger()
+    rootlogger.addHandler(console_handler)
+    rootlogger.addHandler(error_handler)
+    rootlogger.setLevel(logging.ERROR)
+
+    logging.getLogger("fealden.searchserver").setLevel(logging.INFO)
+    logging.getLogger("fealden.backtracking").setLevel(logging.INFO)
+    logging.getLogger("fealden.unafold").setLevel(logging.DEBUG)
+
+    #handler = logging.FileHandler("/var/fealden/fealdend.log")
+    #formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
     # Create main request queue to be shared by all workers,
     # this is, obviously, thread/process safe, unlike DirectoryQueue.
@@ -38,7 +48,7 @@ def main():
 
     # Launch search server
     numprocs = 1
-    logger.info("fealdend: launching searchserver with %d searchworkers" % numprocs)
+    rootlogger.info("fealdend: launching searchserver with %d searchworkers" % numprocs)
     searchserver.start(request_q, numprocs=numprocs)
     
     # Now in this process we will centrally manage all the requests
@@ -46,17 +56,17 @@ def main():
     # request will be verified and then written to a request queue
     # that all workers performing searches will be watching.
     workqueue_dir = "/var/fealden/workqueue"
-    logger.info("fealdend: opening workqueue %s" % (workqueue_dir))
+    rootlogger.info("fealdend: opening workqueue %s" % (workqueue_dir))
     workqueue = util.DirectoryQueue(workqueue_dir)
     while True:
         # Read until queue is empty, blocking
         request = workqueue.get()
         if request.valid() and isinstance(request, util.RequestElement):
-            logger.info("fealdend: adding %s for %s to request_q" %
+            rootlogger.info("fealdend: adding %s for %s to request_q" %
                         (request.command, request.recognition))
             request_q.put(request)
         else:
-            logger.info("fealdend: received bad request on request_q: %s" % request)
+            rootlogger.info("fealdend: received bad request on request_q: %s" % request)
 
 if __name__ == '__main__':
     #    with context:

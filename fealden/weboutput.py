@@ -10,6 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 
+logger = logging.getLogger(__name__)
+
 class WebOutputError(Exception):
     """Exception raised for errors in calling some part of
        UNAFold"""
@@ -23,8 +25,6 @@ class WebOutputError(Exception):
 def failed_output(sensor, output_dir):
     logger.info("failed_output(%s, %s): starting output" %
                 (sensor, output_dir))
-
-    
 
     logger.info("failed_output(%s, %s): finishing output" %
                 (sensor, output_dir))
@@ -46,7 +46,7 @@ def solution_output(sensor, scores, folds, output_dir):
     Returns:
     True, unless error is raised
     """
-    logger = logging.getLogger("fealden.weboutput.solution_output")
+
     # Run UNAfold in temp dir  on output (or can I do this
     # more directly?)
     logger.info("solution_output(%s, %s): starting output" %
@@ -135,16 +135,15 @@ def solution_output(sensor, scores, folds, output_dir):
     return True
 
 
-def plot_gain(Ks, sensor, location="/var/fealden/solutions/", debug=False):
+def plot_gain(Ks, sensor, output_dir):
     """Plots the gain of a sensor for different affinities"""
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
 
     x = np.logspace(-10, -3, num=50)
 
-    logger = logging.getLogger("fealden.weboutput.plot_gain")
     logger.debug("sensor_plot.gain(%f, %s, %s)" %
-                (Ks, sensor, location))
+                (Ks, sensor, output_dir))
     
     toplot = np.logspace(-9,-4, 6)
 
@@ -164,6 +163,6 @@ def plot_gain(Ks, sensor, location="/var/fealden/solutions/", debug=False):
     #plt.show()
 
     # Use this to save the image instead
-    plt.savefig(os.path.join(location, str(sensor) + "_gain" + ".png"))
+    plt.savefig(os.path.join(output_dir, str(sensor) + "_gain" + ".png"))
     return True
 

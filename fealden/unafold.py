@@ -28,6 +28,8 @@ class UNAFoldError(Exception):
     def __str__(self):
         return repr(self.msg)
 
+logger = logging.getLogger(__name__)
+
 
 def run_hybrid_ss_min(sensor, debug=False):
     """Given a sequence, run hybrid-ss-min, return the lines from .ct
@@ -824,7 +826,7 @@ def validate_sensor(sensor, scores, folds, bindingratiorange=(.9,1.1),
 
     Returns:
     boolean -- True if sensor is valid"""
-    logger = logging.getLogger('fealden.unafold.validate_sensor')
+
 
     # Set reasonable default if none are specified
     if not bindingratiorange[0] or not bindingratiorange[1]:

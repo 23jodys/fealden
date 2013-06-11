@@ -55,7 +55,7 @@ class solution:
         if os.path.isfile(output_pickle):
             # Otherwise return template with solution
             (sensor, scores, folds) = pickle.load(open(output_pickle))
-            return render.solution(sensor, scores, folds)
+            return render.solution(sensor, scores, folds, unique_id)
         else:
             # Return templated HTML to keep trying
             return render.solution_retry(unique_id)

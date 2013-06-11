@@ -2,7 +2,7 @@
 import logging
 import time
 from fealden import searchserver, util
-logger = logging.getLogger("fealden")
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 test_requests = [ util.RequestElement(command="BACKTRACKING",
                                       recognition="ATTA",
