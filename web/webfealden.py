@@ -5,7 +5,13 @@ import pickle
 import subprocess
 import uuid
 
-from fealden import searchserver, util
+from fealden import searchserver, util, config
+
+try:
+    runtime = config.getconfig()
+except config.ConfigError:
+    sys.stderr.write("Unrecoverable error, exiting: %s\n" % errormsg)
+    sys.exit()
 
 render = web.template.render('templates/', base='layout')
 urls = (
@@ -31,7 +37,7 @@ myform = form.Form(
 
 class solution_images:
     def GET(self, recog, name):
-        output_root = "/var/fealden/solutions/"
+        output_root = runtime.get("Locations", "solutions")
         filename, ext = os.path.splitext(name)
 
         cType = {
@@ -48,7 +54,7 @@ class solution_images:
 
 class solution:
     def GET(self, unique_id):
-        output_root = "/var/fealden/solutions/"
+        output_root = runtime.get("Locations", "solutions")
         # Check to see if output directory has been generated
         output_pickle = os.path.join(output_root,
                                      unique_id, "pickle.dat")
@@ -78,12 +84,13 @@ class index:
 
         # Create directory for this solution to store its data
         unique_id = uuid.uuid4()
-        output_dir = os.path.join("/var/fealden/solutions/", unique_id.hex)
+        output_root = runtime.get("Locations", "solutions")
+        output_dir = os.path.join(output_root, unique_id.hex)
         os.makedirs(output_dir)
 
         # Add this request to the workqueue for fealdend
         output_pickle = os.path.join(output_dir, "pickle.dat")
-        workqueue = "/var/fealden/workqueue"
+        workqueue = runtime.get("Locations", "workqueue")
         q = util.DirectoryQueue(workqueue)
 
         # Clean up forms data to remove attr for the 'Run' button

@@ -7,13 +7,19 @@ import os
 import sys
 import time
 
-from fealden import searchserver, util
+from fealden import searchserver, util, config
 
 """This daemon listens on a queue for requests, processes those
    requests and then writes the output for webfealden.py"""
 
+try:
+    runtime = config.getconfig()
+except config.ConfigError:
+    sys.stderr.write("Unrecoverable error, exiting: %s\n" % errormsg)
+    sys.exit()
+
 context = daemon.DaemonContext(
-        working_directory='/var/fealden',
+        working_directory=runtime.get("Locations", "workingdirectory"),
         umask=0o002,
         pidfile=lockfile.FileLock('/var/fealden/fealdend.pid'),
         )
@@ -26,7 +32,7 @@ def main():
     console_handler.setLevel(logging.ERROR)
     console_handler.setFormatter(default_formatter)
 
-    error_handler = logging.FileHandler("/var/fealden/fealdend.log", "a")
+    error_handler = logging.FileHandler(runtime.get("Locations","log"), "a")
     error_handler.setLevel(logging.DEBUG)
     error_handler.setFormatter(default_formatter)
 
@@ -55,7 +61,7 @@ def main():
     # coming in for searches from any number of front ends. Each
     # request will be verified and then written to a request queue
     # that all workers performing searches will be watching.
-    workqueue_dir = "/var/fealden/workqueue"
+    workqueue_dir = runtime.get("Locations", "workqueue")
     rootlogger.info("fealdend: opening workqueue %s" % (workqueue_dir))
     workqueue = util.DirectoryQueue(workqueue_dir)
     while True:

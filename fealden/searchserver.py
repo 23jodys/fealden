@@ -118,10 +118,12 @@ def solutionworker(output_q,cmd_dictionary=None):
                                       output_request.scores,
                                       output_request.folds,
                                       output_request.output_dir)
+
             #email_notification(request[0], recognition, request[3])
         elif output_request.status == "FAILED":
             weboutput.failed_output(output_request.sensor,
                                     output_request.output_dir)
+
             logger.debug("solutionworker (%d): FAILED received for %s" %
                         (os.getpid(), output_request.sensor))
         else:

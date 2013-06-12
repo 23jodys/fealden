@@ -1,8 +1,24 @@
-Fealden is a tool for the automated creation of Transcription Factor Beacons, 
-novel biosensor probes for transcription factor activity and quantity.
+Fealden is a tool for the automated creation of Transcription Factor 
+Beacons, novel biosensor probes for transcription factor activity and 
+quantity.
 
 More information may be found about the sensors at 
-Transcription Factor Beacons for the Quantitative Detection of DNA Binding Activity
-Andrew J. Bonham, Alexis Vallée-Bélisle, Norbert O. Reich, Francesco Ricci, and Kevin W. Plaxco. J. Am. Chem. Soc., Article ASAP, 2011, doi:10.1021/ja204775k
-http://dx.doi.org/10.1021/ja204775k
+Transcription Factor Beacons for the Quantitative Detection of DNA 
+Binding Activity
+Andrew J. Bonham, Alexis Vallée-Bélisle, Norbert O. Reich, 
+Francesco Ricci, and Kevin W. Plaxco. 
+J. Am. Chem. Soc., Article ASAP, 2011, 
+doi:10.1021/ja204775k http://dx.doi.org/10.1021/ja204775k
 
+Fealden is a two part server, the first part, fealdend, actually
+performs the searching and prepares final output. The second part,
+webfealden.py actually provides the web interface. Both parts use a
+single configuration file, fealden.ini that must be located in one of
+the following places:
+
+/etc/fealden.ini
+./etc/fealden.ini
+../etc/fealden.ini
+./fealden.ini
+
+If fealden.ini is *not* found, then both processes will not start.
