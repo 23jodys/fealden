@@ -75,6 +75,6 @@ def main():
             rootlogger.info("fealdend: received bad request on request_q: %s" % request)
 
 if __name__ == '__main__':
-    #    with context:
-    main()
+    with context:
+        main()
     
