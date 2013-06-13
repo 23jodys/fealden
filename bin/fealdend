@@ -55,7 +55,7 @@ def main():
     # Launch search server
     numprocs = 1
     rootlogger.info("fealdend: launching searchserver with %d searchworkers" % numprocs)
-    searchserver.start(request_q, numprocs=numprocs)
+    searchserver.start(request_q, parent_pid=os.getpid(), numprocs=numprocs)
     
     # Now in this process we will centrally manage all the requests
     # coming in for searches from any number of front ends. Each
@@ -75,6 +75,6 @@ def main():
             rootlogger.info("fealdend: received bad request on request_q: %s" % request)
 
 if __name__ == '__main__':
-    with context:
-        main()
+    #with context:
+    main()
     

@@ -2,14 +2,17 @@ import logging
 import multiprocessing
 import os
 import pickle
+import Queue
 from setproctitle import *
+import sys
 import tempfile
 import time
+
 from fealden import util, backtracking, weboutput
 
 logger = logging.getLogger(__name__)
 
-def searchworker(request_q, output_q, cmd_dictionary=None):
+def searchworker(request_q, output_q, parent_pid, cmd_dictionary=None):
     setproctitle("fealdend: searchworker")
     def _request_queue_BACKTRACKING(request, output_q):
         logger.info("searchworker(%d): %s dispatched to _request_queue_BACKTRACKING" %
@@ -72,8 +75,18 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
     assert cmd_dictionary["UNKNOWN"]
 
     while True:
-        request = request_q.get(block=True)
-
+        # Verify that the parent process (fealdend) is still alive
+        if os.getppid() != parent_pid:
+            # Parent id is not would it should be, let's kill ourselves
+            logger.info("searchworker(%d): parent id is now %s, it should be %s, exiting" %
+                        (os.getpid(), os.getppid(), parent_pid))
+            sys.exit()
+        try:
+            request = request_q.get(timeout=0.1)
+        except Queue.Empty:
+            # If queue is empty, jump back to the start of the loop
+            continue
+        
         logger.info("searchworker(%d): got %s for %s" %
                     (os.getpid(), request.command, request.recognition))
 
@@ -98,7 +111,7 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
             #return True
         #time.sleep(.01)
 
-def solutionworker(output_q,cmd_dictionary=None):
+def solutionworker(output_q, parent_pid, cmd_dictionary=None):
     setproctitle("fealdend: solutionworker")
     def _output_queue_UNKNOWN(output_request):
         # Process UNKNOWN messages from a solution queue
@@ -138,7 +151,17 @@ def solutionworker(output_q,cmd_dictionary=None):
     assert cmd_dictionary["UNKNOWN"]
 
     while True:
-        output_request = output_q.get(block=True)
+        # Verify that the parent process (fealdend) is still alive
+        if os.getppid() != parent_pid:
+            # Parent id is not would it should be, let's kill ourselves
+            logger.info("solutionworker(%d): parent id is now %s, it should be %s, exiting" %
+                        (os.getpid(), os.getppid(), parent_pid))
+            sys.exit()
+        try:
+            output_request = output_q.get(timeout=0.1)
+        except Queue.Empty:
+            # If queue is empty, jump back to the start of the loop
+            continue
 
         if output_request.command in cmd_dictionary:
             # If the command is something we have in our
@@ -152,7 +175,7 @@ def solutionworker(output_q,cmd_dictionary=None):
             # with UNKNOWN
             cmd_dictionary["UNKNOWN"](output_request)
 
-def start(request_q, numprocs=1):
+def start(request_q, parent_pid, numprocs=1):
     """start -- Starts a pool of workers to process requests
                 for searches, another set of workers to
                 process validate any solutions found and,
@@ -162,7 +185,7 @@ def start(request_q, numprocs=1):
     Arguments:
     request_q -- a multiprocessing.Queue that will receive
                  requests to be processed from the web application
-
+    parent_pid -- pid of the parent process
     Returns:
     True
     """
@@ -177,13 +200,13 @@ def start(request_q, numprocs=1):
     searchworkers = []
     for i in range(numprocs):
         logger.debug("main loop: starting searchworker %d" % i)
-        p = multiprocessing.Process(target=searchworker, args=(request_q, output_q))
+        p = multiprocessing.Process(target=searchworker, args=(request_q, output_q, parent_pid))
         searchworkers.append(p)
         p.start()
 
     # Start a process to processing the output requests
     logger.debug("main loop: starting solutionworker")
-    worker = multiprocessing.Process(target=solutionworker, args=(output_q,))
+    worker = multiprocessing.Process(target=solutionworker, args=(output_q,parent_pid))
     worker.daemon=True
     worker.start()
 
