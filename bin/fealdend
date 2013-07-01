@@ -4,6 +4,7 @@ import lockfile
 import logging
 import multiprocessing
 import os
+import signal
 import sys
 import time
 
@@ -18,13 +19,42 @@ except config.ConfigError:
     sys.stderr.write("Unrecoverable error, exiting: %s\n" % errormsg)
     sys.exit()
 
+# Global list to keep track of all the long running children.
+# All children of fealdend are long running processes and thus,
+# for sanity if any of the children die, we kill the other children
+# and ourselves
+children = [] 
+
+def term_handler(signum, frame):
+    global children
+
+    logger = logging.getLogger("signalhandler")
+    #sys.stderr.write("%s: Caught signal %d\n" % (os.getpid(),signum))
+    if signum == 17:
+        logger.error("%s: One of our searchworker/outputworker had a fatal error." % os.getpid())
+    elif signum == 15:
+        logger.error("%s: Received kill signal, terminating children" % os.getpid())
+
+    if len(children) > 0:
+        logger.debug("going to kill %d children" % len(children))
+        for child2 in children:
+            logger.debug(" terminating child %s" % child2.pid)
+            child2.terminate()
+            child2.join()
+    logger.error("Exiting....")
+    sys.exit("Exiting...")
+
 context = daemon.DaemonContext(
-        working_directory=runtime.get("Locations", "workingdirectory"),
-        umask=0o002,
-        pidfile=lockfile.FileLock('/var/fealden/fealdend.pid'),
+    working_directory=runtime.get("Locations", "workingdirectory"),
+    umask=0o002,
+    pidfile=lockfile.FileLock('/var/fealden/fealdend.pid'),
+    stderr=sys.stderr,
+    signal_map={signal.SIGTERM:term_handler,
+                signal.SIGCHLD:term_handler}
         )
 
 def main():
+    global children
     default_formatter = logging.Formatter(\
         "%(asctime)s:%(levelname)s:%(name)s:%(message)s")
 
@@ -39,12 +69,14 @@ def main():
     rootlogger = logging.getLogger()
     rootlogger.addHandler(console_handler)
     rootlogger.addHandler(error_handler)
-    rootlogger.setLevel(logging.ERROR)
+    #rootlogger.setLevel(logging.ERROR)
+
+    logger = logging.getLogger("fealdend")
 
     logging.getLogger("fealden.searchserver").setLevel(logging.INFO)
     logging.getLogger("fealden.backtracking").setLevel(logging.INFO)
-    logging.getLogger("fealden.unafold").setLevel(logging.DEBUG)
-
+    logging.getLogger("fealden.unafold").setLevel(logging.INFO)
+    logging.getLogger("fealdend").setLevel(logging.INFO)
     #handler = logging.FileHandler("/var/fealden/fealdend.log")
     #formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
@@ -53,28 +85,30 @@ def main():
     request_q = multiprocessing.Queue()
 
     # Launch search server
-    numprocs = 1
-    rootlogger.info("fealdend: launching searchserver with %d searchworkers" % numprocs)
-    searchserver.start(request_q, numprocs=numprocs)
-    
+    numprocs = 1 
+    logger.info("fealdend: launching searchserver with %d searchworkers" % numprocs)
+    children = searchserver.start(request_q, numprocs=numprocs)
+    logger.debug("children = %s" % children)
+
     # Now in this process we will centrally manage all the requests
     # coming in for searches from any number of front ends. Each
     # request will be verified and then written to a request queue
     # that all workers performing searches will be watching.
     workqueue_dir = runtime.get("Locations", "workqueue")
-    rootlogger.info("fealdend: opening workqueue %s" % (workqueue_dir))
     workqueue = util.DirectoryQueue(workqueue_dir)
+    logger.info("fealdend: opened workqueue %s" % (workqueue_dir))
+
     while True:
         # Read until queue is empty, blocking
         request = workqueue.get()
         if request.valid() and isinstance(request, util.RequestElement):
-            rootlogger.info("fealdend: adding %s for %s to request_q" %
+            logger.info("fealdend: adding %s for %s to request_q" %
                         (request.command, request.recognition))
             request_q.put(request)
         else:
-            rootlogger.info("fealdend: received bad request on request_q: %s" % request)
+            logger.info("fealdend: received bad request on request_q: %s" % request)
 
 if __name__ == '__main__':
-    #    with context:
-    main()
+    with context:
+        main()
     

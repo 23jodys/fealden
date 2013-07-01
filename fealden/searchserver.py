@@ -3,6 +3,7 @@ import multiprocessing
 import os
 import pickle
 from setproctitle import *
+import signal
 import tempfile
 import time
 from fealden import util, backtracking, weboutput
@@ -10,7 +11,12 @@ from fealden import util, backtracking, weboutput
 logger = logging.getLogger(__name__)
 
 def searchworker(request_q, output_q, cmd_dictionary=None):
+    # Reset default signal handlers
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+    signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+    
     setproctitle("fealdend: searchworker")
+    
     def _request_queue_BACKTRACKING(request, output_q):
         logger.info("searchworker(%d): %s dispatched to _request_queue_BACKTRACKING" %
                     (os.getpid(), request.recognition))
@@ -99,6 +105,10 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
         #time.sleep(.01)
 
 def solutionworker(output_q,cmd_dictionary=None):
+    # Reset default signal handlers
+    signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+
     setproctitle("fealdend: solutionworker")
     def _output_queue_UNKNOWN(output_request):
         # Process UNKNOWN messages from a solution queue
@@ -187,3 +197,4 @@ def start(request_q, numprocs=1):
     worker.daemon=True
     worker.start()
 
+    return searchworkers + [worker]

@@ -5,6 +5,7 @@ import logging
 import copy
 import random
 from setproctitle import *
+import signal
 import time
 import copy
 
@@ -30,6 +31,10 @@ def sensorsearch(sensor, maxtime, bindingratiorange=None,
     def _maxtimewatcher(maxtime,command):
         """Acts as a timer. If maxtime seconds elapse, then sets
         command to zero"""
+        # Reset default signal handlers
+        signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)
+
         setproctitle("fealdend: timewatcher(%s)" % sensor.GetRecognition())
         starttime = time.time()
         endtime = starttime + maxtime
@@ -126,6 +131,10 @@ def sensorsearch(sensor, maxtime, bindingratiorange=None,
     return solutions
 
 def checknode(sensor, depth, recognition_q, command):
+    # Reset default signal handlers
+    signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+
     setproctitle("fealden: checknode(%s)" % sensor.GetRecognition())
     checknode_logger = logging.getLogger('fealden.backtracking.checknode')
 
