@@ -82,11 +82,14 @@ def searchworker(request_q, output_q, parent_pid, cmd_dictionary=None):
                         (os.getpid(), os.getppid(), parent_pid))
             sys.exit()
         try:
-            request = request_q.get(timeout=0.1)
+            #logger.info("searchworker(%d): attempting to read queue" %
+            #            (os.getpid()))
+
+            request = request_q.get(timeout=1.0)
         except Queue.Empty:
             # If queue is empty, jump back to the start of the loop
             continue
-        
+
         logger.info("searchworker(%d): got %s for %s" %
                     (os.getpid(), request.command, request.recognition))
 
@@ -158,7 +161,9 @@ def solutionworker(output_q, parent_pid, cmd_dictionary=None):
                         (os.getpid(), os.getppid(), parent_pid))
             sys.exit()
         try:
-            output_request = output_q.get(timeout=0.1)
+            #logger.info("solutionworker(%d): attempting to read queue" %
+            #            (os.getpid()))
+            output_request = output_q.get(timeout=1.0)
         except Queue.Empty:
             # If queue is empty, jump back to the start of the loop
             continue

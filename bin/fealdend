@@ -4,6 +4,7 @@ import lockfile
 import logging
 import multiprocessing
 import os
+import signal
 import sys
 import time
 
@@ -12,19 +13,36 @@ from fealden import searchserver, util, config
 """This daemon listens on a queue for requests, processes those
    requests and then writes the output for webfealden.py"""
 
+
+# Try to read in our configuration file, which mush exist.
 try:
     runtime = config.getconfig()
 except config.ConfigError:
     sys.stderr.write("Unrecoverable error, exiting: %s\n" % errormsg)
     sys.exit()
 
+# Configure the daemon context
 context = daemon.DaemonContext(
-        working_directory=runtime.get("Locations", "workingdirectory"),
-        umask=0o002,
-        pidfile=lockfile.FileLock('/var/fealden/fealdend.pid'),
-        )
+    working_directory=runtime.get("Locations", "workingdirectory"),
+    umask=0o002,
+    detach_process=False,
+    pidfile=lockfile.FileLock('/var/fealden/fealdend.pid'),
+    stderr=sys.stderr
+    )
+
+def test_handler(signum, frame):
+    logger = logging.getLogger(__name__)
+    logger.error("(%s) Got sigterm" % os.getpid())
+    sys.exit()
+
+
+context.signal_map = {
+    signal.SIGTERM: test_handler
+    }
+
 
 def main():
+
     default_formatter = logging.Formatter(\
         "%(asctime)s:%(levelname)s:%(name)s:%(message)s")
 
@@ -39,11 +57,14 @@ def main():
     rootlogger = logging.getLogger()
     rootlogger.addHandler(console_handler)
     rootlogger.addHandler(error_handler)
-    rootlogger.setLevel(logging.ERROR)
+    #rootlogger.setLevel(logging.ERROR)
+
+    logger = logging.getLogger(__name__)
 
     logging.getLogger("fealden.searchserver").setLevel(logging.INFO)
     logging.getLogger("fealden.backtracking").setLevel(logging.INFO)
     logging.getLogger("fealden.unafold").setLevel(logging.DEBUG)
+    logging.getLogger("fealdend").setLevel(logging.DEBUG)
 
     #handler = logging.FileHandler("/var/fealden/fealdend.log")
     #formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
@@ -54,7 +75,7 @@ def main():
 
     # Launch search server
     numprocs = 1
-    rootlogger.info("fealdend: launching searchserver with %d searchworkers" % numprocs)
+    logger.info("fealdend: launching searchserver with %d searchworkers" % numprocs)
     searchserver.start(request_q, parent_pid=os.getpid(), numprocs=numprocs)
     
     # Now in this process we will centrally manage all the requests
@@ -62,19 +83,19 @@ def main():
     # request will be verified and then written to a request queue
     # that all workers performing searches will be watching.
     workqueue_dir = runtime.get("Locations", "workqueue")
-    rootlogger.info("fealdend: opening workqueue %s" % (workqueue_dir))
+    logger.info("fealdend: opening workqueue %s" % (workqueue_dir))
     workqueue = util.DirectoryQueue(workqueue_dir)
     while True:
         # Read until queue is empty, blocking
         request = workqueue.get()
         if request.valid() and isinstance(request, util.RequestElement):
-            rootlogger.info("fealdend: adding %s for %s to request_q" %
+            logger.info("fealdend: adding %s for %s to request_q" %
                         (request.command, request.recognition))
             request_q.put(request)
         else:
-            rootlogger.info("fealdend: received bad request on request_q: %s" % request)
+            logger.info("fealdend: received bad request on request_q: %s" % request)
 
 if __name__ == '__main__':
-    #with context:
-    main()
+    with context:
+        main()
     
