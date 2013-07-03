@@ -13,6 +13,8 @@ from fealden import searchserver, util, config
 """This daemon listens on a queue for requests, processes those
    requests and then writes the output for webfealden.py"""
 
+
+# Try to read in our configuration file, which mush exist.
 try:
     runtime = config.getconfig()
 except config.ConfigError:

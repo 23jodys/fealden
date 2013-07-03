@@ -16,7 +16,6 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
     signal.signal(signal.SIGCHLD, signal.SIG_DFL)
     
     setproctitle("fealdend: searchworker")
-    
     def _request_queue_BACKTRACKING(request, output_q):
         logger.info("searchworker(%d): %s dispatched to _request_queue_BACKTRACKING" %
                     (os.getpid(), request.recognition))
