@@ -1,17 +1,18 @@
-This code depends on
+This code was developed with the following versions
 
-python 2.7
+python 2.7 (may work on 2.6 with backport of argparse)
 UNAfold 3.8
+mfold_util-4.6
 
 Python Libraries: 
-setproctitle
-python-daemon
-parseargs
-numpy
-web.py
+setproctitle-1.1.7
+python-daemon-1.5.5
+numpy-1.7.0
+web.py-0.37
+matplotlib-1.2.0
 
 Other Tools:
-matplotlib
+ImageMagick-6.6.0.4
 
 For Developers:
 nosetests
