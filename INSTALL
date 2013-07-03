@@ -1,5 +1,6 @@
 This code depends on
 
+python 2.7
 UNAfold 3.8
 
 Python Libraries: 
@@ -7,6 +8,7 @@ setproctitle
 python-daemon
 parseargs
 numpy
+web.py
 
 Other Tools:
 matplotlib
