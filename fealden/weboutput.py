@@ -205,28 +205,28 @@ def solution_output(sensor, scores, folds, output_dir):
 
 def plot_gain(Ks, sensor, output_dir):
     """Plots the gain of a sensor for different affinities"""
+
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
 
-    x = np.logspace(-10, -3, num=50)
+    x = np.logspace(-10, -2, num=50)
 
     logger.debug("sensor_plot.gain(%f, %s, %s)" %
-                (Ks, sensor, output_dir))
-    
+                 (Ks, sensor, output_dir))
+
     toplot = np.logspace(-9,-4, 6)
 
     colors = ['b','g','r','c','m','k']
 
     for affinity in toplot:
-        plt.plot(x, (Ks * x)/(affinity * (1+Ks) + Ks * x), "%s-" % (colors.pop()), label = affinity)
-    
+        plt.plot(x, (Ks * x)/(affinity * (1+Ks) + Ks * x), "%s-" % (colors.pop()), label = "$10^{%d}$" % (int(math.log10(affinity))))
+
     plt.xscale('log')
 
     ax.legend(loc="center left", bbox_to_anchor=[0.5, 0.5],
-               ncol=2, shadow=True, title="Affinity with K_s = %f" %(Ks))
+               ncol=2, shadow=True, title=("Affinity with $K_s$ = %f" %(Ks)))
     ax.set_xlabel('Transcription Factor Concentration (M)')
     ax.set_ylabel('Predicted Sensor Gain')
-
 
     try:
         # Uncomment this to display locally, useful for debugging

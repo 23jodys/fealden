@@ -78,6 +78,7 @@ def main():
     logging.getLogger("fealden.searchserver").setLevel(logging.INFO)
     logging.getLogger("fealden.backtracking").setLevel(logging.INFO)
     logging.getLogger("fealden.unafold").setLevel(logging.INFO)
+    logging.getLogger("fealden.weboutput").setLevel(logging.INFO)
     logging.getLogger("fealdend").setLevel(logging.INFO)
     #handler = logging.FileHandler("/var/fealden/fealdend.log")
     #formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
