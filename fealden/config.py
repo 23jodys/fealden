@@ -9,6 +9,8 @@ class ConfigError(Exception):
     def __repr__(self):
         return repr(self.msg)
 
+    def __str__(self):
+        return str(self.msg)
 
 def getconfig(ini=None):
     fealden = ConfigParser.ConfigParser()
@@ -42,15 +44,14 @@ def getconfig(ini=None):
 
     # The following elements must be checked to verify that
     # the location referenced both exists and is writable.
-    required_rw_settings = ["log",
-                            "solutions",
+    required_rw_settings = ["solutions",
                             "workqueue",
                             "workingdirectory"]
     
     # Check writability
     for location in [fealden.get("Locations", x) for x in required_rw_settings]:
         if not os.access(location, os.W_OK):
-            errormsg += ("%s is not writable " % location)
+            errormsg += ("%s is not writable\n" % location)
             ok = False
 
     if not ok:
