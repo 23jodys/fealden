@@ -58,7 +58,17 @@ class solution:
         # Check to see if output directory has been generated
         output_pickle = os.path.join(output_root,
                                      unique_id, "pickle.dat")
-        if os.path.isfile(output_pickle):
+
+        failed_pickle = os.path.join(output_root,
+                                     unique_id,
+                                     "failed.dat")
+
+        if os.path.isfile(failed_pickle):
+            # If we have a failed.dat file, then fealdend had some
+            # sort of runtime error, misconfiguration.
+            (sensor,reason) = pickle.load(open(failed_pickle))
+            return render.failed(sensor,reason)
+        elif os.path.isfile(output_pickle):
             # Otherwise return template with solution
             (sensor, scores, folds) = pickle.load(open(output_pickle))
             return render.solution(sensor, scores, folds, unique_id)

@@ -1,6 +1,7 @@
 from nose.tools import nottest, raises
 import tempfile
 import os
+import pickle
 import shutil
 import subprocess
 from glob import glob
@@ -33,7 +34,7 @@ def run_unafold_missing_binary_test():
     bad_command = "/tmp/does_not_exist"
     temp_dir = tempfile.mkdtemp()
     try:
-        weboutput.run_unafold("/tmp", "ATTAA", bad_command )
+        weboutput.run_unafold(os.path.join("/tmp", "ATTAA"), "ATTAA", bad_command )
     finally:
         shutil.rmtree(temp_dir)
 
@@ -118,6 +119,67 @@ def convert_substructure_images_no_output_dir_test():
         shutil.rmtree(unafold_dir)
 
 
+@raises(RuntimeError)
+def add_borders_test_no_folds():
+    #    def add_borders(folds, output_dir, cmd="/usr/bin/convert")
+    add_border_test_file = "./test/tests/add_borders/pngtest16rgba.png"
+    folds = []
+    sensor = "ATTATATA"
+
+    outputfold_dir = tempfile.mkdtemp()
+    try:
+        shutil.copy(add_border_test_file, os.path.join(outputfold_dir,"ATTATATA.png"))
+        weboutput.add_borders(folds, sensor, outputfold_dir)
+    finally:
+        shutil.rmtree(outputfold_dir)
+
+@raises(RuntimeError)
+def add_borders_test_no_output_dir():
+    #    def add_borders(folds, output_dir, cmd="/usr/bin/convert")
+    add_border_test_file = "./test/tests/add_borders/pngtest16rgba.png"
+    folds = [ { "type": "binding_on" }]
+    sensor = "ATTATATA"
+    
+    outputfold_dir = "/tmp/does_not_exist"
+
+    #shutil.copy(add_border_test_file, os.path.join(outputfold_dir,"ATTATATA.png"))
+    # Should raise RuntimeError
+    weboutput.add_borders(folds, sensor, outputfold_dir)
+
+@raises(RuntimeError)
+def add_borders_test_missing_image_magick():
+    #    def add_borders(folds, output_dir, cmd="/usr/bin/convert")
+    add_border_test_file = "./test/tests/add_borders/pngtest16rgba.png"
+    folds = [ { "type": "binding_on" }]
+    #cmd = "/tmp/does_not_exist1"
+    sensor = "ATTATATA"
+
+    outputfold_dir = tempfile.mkdtemp()
+    
+    try:
+        shutil.copy(add_border_test_file, os.path.join(outputfold_dir,"ATTATATA.png"))
+        weboutput.add_borders(folds, sensor, outputfold_dir)
+    finally:
+        shutil.rmtree(outputfold_dir)
+
+def add_borders_test_clean():
+    #    def add_borders(folds, output_dir, cmd="/usr/bin/convert")
+    add_border_test_file = "./test/tests/add_borders/pngtest16rgba.png"
+    folds = [ { "type": "binding_on" }]
+
+    sensor = "ATTATATA"
+
+    outputfold_dir = tempfile.mkdtemp()
+    
+    try:
+        shutil.copy(add_border_test_file, os.path.join(outputfold_dir,"ATTATATA_1.png"))
+        weboutput.add_borders(folds, sensor, outputfold_dir)
+        assert os.path.getsize(os.path.join(outputfold_dir, "ATTATATA_1.png")) > 0
+        assert os.path.getsize(os.path.join(outputfold_dir, "ATTATATA_1_t.png")) > 0
+    finally:
+        shutil.rmtree(outputfold_dir)
+
+
 # @raises(RuntimeError)
 # def convert_substructure_images_bad_unafold_dir_permissions_test():
 #     # If we do not have permissions to write to the unafold
@@ -130,17 +192,20 @@ def convert_substructure_images_no_output_dir_test():
 #         shutil.rmtree(temp_dir)
 
 
-@nottest
+
 def solution_output_test_generator():
-    tests = [
-        ["ATTA", 4]
-    ]
-    
+    # tests = [
+    #     ["ATTA", 4, [ {"type":"binding_on"}, {"binding_percent":.10}]]
+    # ]
+
+    testdir = "./test/tests/solution_output_tests/"
+    tests = os.listdir(testdir)
+
     def _solution_output_tester(sensor, scores, folds):
         badtest = False
         temp_dir = tempfile.mkdtemp()
 
-        weboutput.solution_output(sensor, [], [], temp_dir)
+        weboutput.solution_output(sensor, [], folds, temp_dir)
 
         print("SOLUTION_OUTPUT_TEST: temp dir is %s" % (temp_dir))
 
@@ -171,5 +236,7 @@ def solution_output_test_generator():
             assert True
 
     for test in tests:
-        sensor = util.Sensor(test[0])
-        yield _solution_output_tester,sensor, [],[]
+        # Load up sample data
+        (sensor, scores, folds) = pickle.load(open(os.path.join(testdir, test, "work", "pickle.dat")))
+
+        yield _solution_output_tester, sensor, scores, folds

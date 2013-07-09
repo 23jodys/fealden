@@ -26,11 +26,15 @@ class WebOutputError(Exception):
         return repr(self.msg)
 
 def failed_output(sensor, output_dir, reason):
-    logger.info("failed_output(%s, %s): starting output" %
-                (sensor, output_dir))
+    logger.error("failed_output(%s, %s) reason: %s" %
+                (sensor, output_dir, reason))
 
-    logger.info("failed_output(%s, %s): finishing output" %
-                (sensor, output_dir))
+    # Attempt to store reason for web app
+    try:
+        pickle.dump((sensor,reason), open(os.path.join(output_dir, "failed.dat"), "w"))
+    except:
+        pass
+
 
 def run_unafold(unafold_dir, sensor, cmd="UNAFold.pl"):
     try:
@@ -65,7 +69,10 @@ def convert_substructure_images(unafold_dir, output_dir, convert_cmd="convert"):
     except (OSError, IOError, subprocess.CalledProcessError), err:
         raise RuntimeError(str(err))
 
-def add_borders(folds, output_dir, cmd="/usr/bin/convert"):
+def add_borders(folds, sensor, output_dir, cmd="/usr/bin/convert"):
+    if len(folds) == 0:
+        raise RuntimeError("add_borders(len(%s), %s, %s, %s): called with empty folds" %
+                           (len(folds), sensor, output_dir, cmd))
     try:
         for index, fold in enumerate(folds):
             if fold["type"] == "binding_on":
@@ -84,7 +91,7 @@ def add_borders(folds, output_dir, cmd="/usr/bin/convert"):
                                os.path.join(output_dir, str(sensor) + "_" + str(index + 1) + ".png"),
                                os.path.join(output_dir, str(sensor) + "_" + str(index + 1) + "_t.png")]
             subprocess.check_call(' '.join(convert_command), shell=True)
-    except (IOError, OSError), err:
+    except (IOError, OSError, subprocess.CalledProcessError), err:
         raise RuntimeError(str(err))
 
 def solution_output(sensor, scores, folds, output_dir):
@@ -125,7 +132,7 @@ def solution_output(sensor, scores, folds, output_dir):
                          (sensor, output_dir))
             logger.error("   %s" % str(err))
             failed_output(sensor, output_dir, "unable to run UNAfold, permission problem?")
-
+            return False
         try:
             logger.debug("solution_output(%s, %s): converting ps to png" %
                          (sensor, output_dir))
@@ -135,7 +142,7 @@ def solution_output(sensor, scores, folds, output_dir):
                          (sensor, output_dir))
             logger.error("   %s" % str(err))
             failed_output(sensor, output_dir, "unable to run UNAfold, permission problem?")
-
+            return False
     finally:
         # Clean up after unafold
         shutil.rmtree(unafold_dir)
@@ -144,13 +151,13 @@ def solution_output(sensor, scores, folds, output_dir):
     try:
         logger.debug("solution_output(%s, %s): creating thumbnails" %
                      (sensor, output_dir))
-        add_borders(folds, output_dir)
+        add_borders(folds, sensor, output_dir)
     except RuntimeError, err:
         logger.error("solution_output(%s, %s): unable to add borders, create thumbnails, permission problem?" %
                      (sensor, output_dir))
         logger.error("   %s" % str(err))
         failed_output(sensor, output_dir, "unable to run process images, permission problem?")
-
+        return False
     # Generate sensor gain graph
     logger.debug("solution_output(%s, %s): create gain graph" %
                  (sensor, output_dir))
@@ -177,7 +184,7 @@ def solution_output(sensor, scores, folds, output_dir):
                      (sensor, output_dir))
         logger.error("   %s" % str(err))
         failed_output(sensor, output_dir, "unable to generate gain graph, permission problem?")
-        
+        return False
     # Pickle output of backtracking search into output_dir
     # The pickled output serves as a signal to the web frontend
     # that the solution has been successfully run.
@@ -191,6 +198,7 @@ def solution_output(sensor, scores, folds, output_dir):
                      (sensor, output_dir))
         logger.error("   %s" % str(err))
         failed_output(sensor, output_dir, "unable to pickle sensor data, permission problem?")
+        return False
     logger.info("solution_output(%s, %s): finished output" %
                 (sensor, output_dir))
 
