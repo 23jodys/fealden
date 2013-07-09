@@ -33,9 +33,9 @@ def term_handler(signum, frame):
     logger = logging.getLogger("signalhandler")
     #sys.stderr.write("%s: Caught signal %d\n" % (os.getpid(),signum))
     if signum == 17:
-        logger.error("%s: One of our searchworker/outputworker had a fatal error." % os.getpid())
+        logger.debug("%s: One of our searchworker/outputworker had a fatal error." % os.getpid())
     elif signum == 15:
-        logger.error("%s: Received kill signal, terminating children" % os.getpid())
+        logger.debug("%s: Received kill signal, terminating children" % os.getpid())
 
     if len(children) > 0:
         logger.debug("going to kill %d children" % len(children))
@@ -43,7 +43,7 @@ def term_handler(signum, frame):
             logger.debug(" terminating child %s" % child2.pid)
             child2.terminate()
             child2.join()
-    logger.error("Exiting....")
+    logger.debug("Exiting....")
     sys.exit("Exiting...")
 
 context = daemon.DaemonContext(
