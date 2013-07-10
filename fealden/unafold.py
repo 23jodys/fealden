@@ -42,42 +42,43 @@ def run_hybrid_ss_min(sensor, debug=False):
        list -- of lines from the .ct file
     """
     tempdir = tempfile.mkdtemp()
-    # hybrid-ss-min can only read sequences in from a file and
-    # write .ct data to a file, ughh...
     try:
-        seqfile = open(os.path.join(tempdir, str(sensor)),"w")
-        seqfile.write(str(sensor))
-        seqfile.close()
-    except IOError:
-        raise UNAFoldError("run_hybrid_ss_min(): can't create sequence file")
-    command = ['hybrid-ss-min','-n','DNA','--tmin=25', '--tmax=25',
-               '--sodium=0.15', '--magnesium=0.005','--mfold=50,-1,100', str(sensor)]
+        # hybrid-ss-min can only read sequences in from a file and
+        # write .ct data to a file, ughh...
+        try:
+            seqfile = open(os.path.join(tempdir, str(sensor)),"w")
+            seqfile.write(str(sensor))
+            seqfile.close()
+        except IOError:
+            raise UNAFoldError("run_hybrid_ss_min(): can't create sequence file")
+        command = ['hybrid-ss-min','-n','DNA','--tmin=25', '--tmax=25',
+                   '--sodium=0.15', '--magnesium=0.005','--mfold=50,-1,100', str(sensor)]
 
-    # Run hybrid-ss-min
-    try:
-        subprocess.check_call(command,cwd=tempdir, stdout=open("/dev/null"))
-    except IOError:
-        raise UNAFoldError("run_hybrid_ss_min(): call %s failed" % ' '.join(command))
+        # Run hybrid-ss-min
+        try:
+            subprocess.check_call(command,cwd=tempdir, stdout=open("/dev/null"))
+        except IOError:
+            raise UNAFoldError("run_hybrid_ss_min(): call %s failed" % ' '.join(command))
 
-    # hybrid-ss-min creates a number of files each run, but the $SEQ.ct
-    # which contains secondary structure information for each conformation
-    # The program ct-energy (part of UNAfold) parses the .ct file and
-    # returns an easily parseable secondary structure.
+        # hybrid-ss-min creates a number of files each run, but the $SEQ.ct
+        # which contains secondary structure information for each conformation
+        # The program ct-energy (part of UNAfold) parses the .ct file and
+        # returns an easily parseable secondary structure.
 
-    # Open .ct file
-    ct_filename = os.path.join(tempdir, str(sensor) + ".ct")
-    ct_file = open(ct_filename)
-    if debug: print "run_hybrid_ss_min(): ct_file = %s" % ct_filename
+        # Open .ct file
+        ct_filename = os.path.join(tempdir, str(sensor) + ".ct")
+        ct_file = open(ct_filename)
+        if debug: print "run_hybrid_ss_min(): ct_file = %s" % ct_filename
 
-    # read in lines
-    lines = ct_file.readlines()
+        # read in lines
+        lines = ct_file.readlines()
 
-    # Close .ct file
-    ct_file.close()
-
-    # UNAfold produces copius output in the form of temporary files
-    # So, we must remove all temporary files associated with UNAfold run
-    shutil.rmtree(tempdir)
+        # Close .ct file
+        ct_file.close()
+    finally:
+        # UNAfold produces copius output in the form of temporary files
+        # So, we must remove all temporary files associated with UNAfold run
+        shutil.rmtree(tempdir)
 
     return lines
 
