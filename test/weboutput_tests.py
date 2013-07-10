@@ -192,7 +192,6 @@ def add_borders_test_clean():
 #         shutil.rmtree(temp_dir)
 
 
-
 def solution_output_test_generator():
     # tests = [
     #     ["ATTA", 4, [ {"type":"binding_on"}, {"binding_percent":.10}]]

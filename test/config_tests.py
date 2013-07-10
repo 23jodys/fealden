@@ -19,11 +19,11 @@ pid: asdf
                     [
 """
 [Locations]
-log: asfd
-workingdirectory: asdf
-solutions: asdf
-workqueue: asdf
-pid: asdf
+log: /asfd
+workingdirectory: /asdf
+solutions: /asdf
+workqueue: /asdf
+pid: /asdf
 """,
                         False, "files don't exist"],
                     )

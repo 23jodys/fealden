@@ -47,9 +47,9 @@ def getconfig(ini=None):
     required_rw_settings = ["workingdirectory",
                             "workqueue",
                             "solutions"]
-
     
     # Check writability
+
     for location in [fealden.get("Locations", x) for x in required_rw_settings]:
         if not os.access(location, os.W_OK):
             try:
