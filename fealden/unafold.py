@@ -916,7 +916,7 @@ def validate_sensor(sensor, scores, folds, bindingratiorange=(.9,1.1),
        unknowntest and
        numfoldtest and
        maxenergytest):
-        logger.info("unafold.validate_sensor(%s): found valid solution" %
+        logger.debug("unafold.validate_sensor(%s): found valid solution" %
                      (sensor))
         return True
     else:

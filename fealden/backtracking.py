@@ -83,7 +83,7 @@ def sensorsearch(sensor, maxtime, bindingratiorange=None,
         result = recognition_queue.get(block=True)
 
         if not result.valid():
-            logger.info("sensorsearch(...): QUEUE -- INVALID %s" %
+            logger.debug("sensorsearch(...): QUEUE -- INVALID %s" %
                          (result))
 
         elif result.command == "SOLUTION":
@@ -96,14 +96,14 @@ def sensorsearch(sensor, maxtime, bindingratiorange=None,
                                        maxunknownpercent=maxunknownpercent,
                                        numfoldrange=numfoldrange,
                                        maxenergy=maxenergy):
-                logger.info("sensorsearch(...): QUEUE -- VALID SOLUTION %s" % result.command)
+                logger.debug("sensorsearch(...): QUEUE -- VALID SOLUTION %s" % result.command)
                 solutions.append(result)
                 #solutions.append((result[1], result[2], result[3]))
                 if len(solutions) == maxsolutions:
                     command.value = 0
                     break
             else:
-                logger.info("sensorsearch(...): QUEUE -- INVALID SOLUTION %s" % result.sensor)
+                logger.debug("sensorsearch(...): QUEUE -- INVALID SOLUTION %s" % result.sensor)
         elif result.command == "PRUNED":
             # Add depth to list of nodes pruned
             logger.debug("sensorsearch(...): QUEUE -- PRUNED(%d)" %
@@ -111,7 +111,7 @@ def sensorsearch(sensor, maxtime, bindingratiorange=None,
             pruned.append(result)
         elif result.command == "DEPTH":
             if result.depth > maxdepth:
-                logger.info("sensorsearch(...): QUEUE -- DEPTH(%d) is now maxdepth "
+                logger.debug("sensorsearch(...): QUEUE -- DEPTH(%d) is now maxdepth "
                              % (result.depth))
                 maxdepth = result.depth
             else:

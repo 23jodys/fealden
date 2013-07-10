@@ -17,11 +17,11 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
     
     setproctitle("fealdend: searchworker")
     def _request_queue_BACKTRACKING(request, output_q):
-        logger.info("searchworker(%d): %s dispatched to _request_queue_BACKTRACKING" %
+        logger.debug("searchworker(%d): %s dispatched to _request_queue_BACKTRACKING" %
                     (os.getpid(), request.recognition))
         # Do the search
         sensor = util.Sensor(request.recognition)
-        logger.info("sensor.Recognition is %s" % sensor.GetRecognition())
+        logger.debug("sensor.Recognition is %s" % sensor.GetRecognition())
         setproctitle("fealdend: searchworker(%s)" % sensor.GetRecognition())
         solutions = backtracking.sensorsearch(sensor, request.maxtime,
                                               bindingratiorange = (request.binding_ratio_lo, request.binding_ratio_hi),
@@ -29,7 +29,7 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
                                               numfoldrange=(request.numfolds_lo,request.numfolds_hi),
                                               maxsolutions= request.numsolutions,
                                               maxenergy = request.maxenergy)
-        logger.debug("fealdend: searchworker(%s), found %d solutions, putting them"
+        logger.info("fealdend: searchworker(%s), found %d solutions, putting them "
                      "on the queue" %
                      (sensor.GetRecognition(), len(solutions)))
         
@@ -79,8 +79,8 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
     while True:
         request = request_q.get(block=True)
 
-        logger.info("searchworker(%d): got %s for %s" %
-                    (os.getpid(), request.command, request.recognition))
+        logger.debug("searchworker(%d): got %s for %s" %
+                     (os.getpid(), request.command, request.recognition))
 
         if request.command == "EXIT":
             logger.debug("request_queue(%d): got EXIT" % os.getpid())
@@ -120,8 +120,8 @@ def solutionworker(output_q,cmd_dictionary=None):
 
         if output_request.status == "FOUND":
             # Process FOUND messages from a solution queue
-            logger.info("solutionworker(%d): CMD: WEBOUTPUT STAT: found on %s" %
-                        (os.getpid(), output_request.sensor))
+            logger.debug("solutionworker(%d): CMD: WEBOUTPUT STAT: found on %s" %
+                         (os.getpid(), output_request.sensor))
             
             weboutput.solution_output(output_request.sensor,
                                       output_request.scores,

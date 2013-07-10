@@ -105,7 +105,7 @@ def main():
         # Read until queue is empty, blocking
         request = workqueue.get()
         if request.valid() and isinstance(request, util.RequestElement):
-            logger.info("fealdend: adding %s for %s to request_q" %
+            logger.info("fealdend: received %s request for %s, adding to queue" %
                         (request.command, request.recognition))
             request_q.put(request)
         else:
