@@ -44,15 +44,19 @@ def getconfig(ini=None):
 
     # The following elements must be checked to verify that
     # the location referenced both exists and is writable.
-    required_rw_settings = ["solutions",
+    required_rw_settings = ["workingdirectory",
                             "workqueue",
-                            "workingdirectory"]
+                            "solutions"]
+
     
     # Check writability
     for location in [fealden.get("Locations", x) for x in required_rw_settings]:
         if not os.access(location, os.W_OK):
-            errormsg += ("%s is not writable\n" % location)
-            ok = False
+            try:
+                os.makedirs(location)
+            except OSError,msg:
+                errormsg += "{0} is not writable and I could not create it ({1})\n".format(location,msg)
+                ok = False
 
     if not ok:
         raise ConfigError(errormsg)

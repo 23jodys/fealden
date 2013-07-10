@@ -49,8 +49,7 @@ def term_handler(signum, frame):
 context = daemon.DaemonContext(
     working_directory=runtime.get("Locations", "workingdirectory"),
     umask=0o002,
-    pidfile=lockfile.FileLock(os.path.join(runtime.get("Locations", "workingdirectory")),
-                              "fealdend.pid"),
+    pidfile=lockfile.FileLock(runtime.get("Locations", "pid")),
     stderr=sys.stderr,
     signal_map={signal.SIGTERM:term_handler,
                 signal.SIGCHLD:term_handler}
