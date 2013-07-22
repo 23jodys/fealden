@@ -13,7 +13,7 @@ class ConfigError(Exception):
         return str(self.msg)
 
 def getconfig(ini=None):
-    fealden = ConfigParser.ConfigParser()
+    fealden = ConfigParser.ConfigParser({'timeout':"60"})
     toread = ["/etc/fealden.ini",
               "../etc/fealden.ini",
               "etc/fealden.ini",
@@ -38,6 +38,10 @@ def getconfig(ini=None):
 
     if not fealden.has_section("Locations"):
         raise ConfigError("Locations section is missing")
+
+    if not fealden.has_section("Parameters"):
+        raise ConfigError("Parameters section is missing")
+    
     for field in required:
         if not fealden.has_option("Locations",field):
             raise ConfigError("Missing %s option" % field)
@@ -49,7 +53,6 @@ def getconfig(ini=None):
                             "solutions"]
     
     # Check writability
-
     for location in [fealden.get("Locations", x) for x in required_rw_settings]:
         if not os.access(location, os.W_OK):
             try:

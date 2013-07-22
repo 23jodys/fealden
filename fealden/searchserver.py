@@ -60,6 +60,7 @@ def searchworker(request_q, output_q, cmd_dictionary=None):
                                                 status="FAILED",
                                                 request_id=request.request_id,
                                                 output_dir= request.output_dir,
+                                                sensor = sensor,
                                                 email = request.email)
             output_q.put(output_request)
 
@@ -131,7 +132,8 @@ def solutionworker(output_q,cmd_dictionary=None):
             #email_notification(request[0], recognition, request[3])
         elif output_request.status == "FAILED":
             weboutput.failed_output(output_request.sensor,
-                                    output_request.output_dir)
+                                    output_request.output_dir,
+                                    "Search timed out")
 
             logger.debug("solutionworker (%d): FAILED received for %s" %
                         (os.getpid(), output_request.sensor))

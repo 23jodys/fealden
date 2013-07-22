@@ -114,11 +114,13 @@ class index:
         toints = [ "numfolds_lo", "numfolds_hi"]
         for el in toints:
             new_attrs[el] = int(new_attrs[el])
+
+        maxtime = runtime.getint("Parameters", "timeout")
         
         request = util.RequestElement(command="BACKTRACKING",
                                       request_id=unique_id.hex,
                                       output_dir=output_dir,
-                                      maxtime=60,
+                                      maxtime=maxtime,
                                       **new_attrs)
         q.put(request)
 
