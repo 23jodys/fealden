@@ -109,8 +109,9 @@ def main():
                         (request.command, request.recognition))
             request_q.put(request)
         else:
+            logging.getLogger("fealden.util").setLevel(logging.DEBUG)            
             logger.info("fealdend: received bad request on request_q: %s" % request)
-
+            logging.getLogger("fealden.util").setLevel(logging.INFO)            
 if __name__ == '__main__':
     with context:
         main()
