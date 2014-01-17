@@ -505,7 +505,7 @@ def check_recognition_stem(stemlh, stemrh, recognition, debug=False):
                       fealden.util.match(stemlh, tomatch))
                 print(" check_recognition_stem(): rh match %s" %
                       fealden.util.match(stemrh, tomatch))
-                
+               
             if(fealden.util.match(tuple(stemlh), tuple(tomatch)) or fealden.util.match(tuple(stemlh), tuple(tomatch[::-1])) or
                fealden.util.match(tuple(stemrh), tuple(tomatch)) or fealden.util.match(tuple(stemrh), tuple(tomatch[::-1]))):
                 maxlength = float(len(recognition))
@@ -641,6 +641,9 @@ def fold_type(fold, recognition, quencher, debug=False):
             stems seperated by bulge loops to be one stem.
          2. That stem contains 100% of the recognition sequence
             expressed sequentially
+         3. The distance (measured in nucleotides) from the 5' end
+            (which contains the fluorophore) and the quencher is 4 or
+            more.
 
        nonbinding_off
          1. There are precisely two stems, but we can consider
