@@ -9,8 +9,8 @@ import signal
 import time
 import copy
 
-from fealden.util import *
-from fealden import unafold
+from .util import *
+from . import unafold
 
 logger = logging.getLogger(__name__)
 

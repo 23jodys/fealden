@@ -1,6 +1,4 @@
-from fealden import unafold
-from fealden import util
-from fealden import unafold_three_stem
+from fealden.lib import unafold, util, unafold_three_stem
 
 def test_fold_type_generator():
     expected = ["binding_on", "nonbinding_off"]

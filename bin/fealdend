@@ -8,7 +8,7 @@ import signal
 import sys
 import time
 
-from fealden import searchserver, util, config
+from lib import searchserver, util, config
 
 """This daemon listens on a queue for requests, processes those
    requests and then writes the output for webfealden.py"""

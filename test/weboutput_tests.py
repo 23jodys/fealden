@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from glob import glob
 
-from fealden import weboutput, util
+from fealden.lib import weboutput, util
 
 @raises(RuntimeError)
 def run_unafold_missing_unafolddir_test():

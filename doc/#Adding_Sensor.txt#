@@ -1,0 +1,21 @@
+Connect to the development server, erebor.helluin.org
+
+username: becky
+password: G3j(^)Ks*xg_|y_
+
+Clone a copy of the fealden repository
+
+becky@erebor:~$ git clone https://github.com/23jodys/fealden.git
+
+A super simple framework for development is to launch to ssh
+connections in two different windows (you cna use putty on Windows).
+In one window you can use jed, a simple text mode editor to edit your
+source code. In the other you can run (and rerun) your unit tests.
+You will write a new function that will plug in the existing
+framework. The first thing we will do is create a unit test for the new function
+you will be writing. 
+
+                                   
+
+				       
+

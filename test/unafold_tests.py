@@ -6,8 +6,8 @@ import argparse
 
 from nose.tools import nottest
 
-from fealden import unafold
-from fealden import util
+from fealden.lib import unafold
+from fealden.lib import util
 
 
 def test_combine_stems_generator():

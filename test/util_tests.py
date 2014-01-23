@@ -7,8 +7,8 @@ import tempfile
 
 from nose.tools import nottest
 
-from fealden.util import Sensor
-from fealden import util
+from fealden.lib.util import Sensor
+from fealden.lib import util
 
 logger = logging.getLogger("fealden.util")
 logger.setLevel(logging.DEBUG)

@@ -6,7 +6,7 @@ from setproctitle import *
 import signal
 import tempfile
 import time
-from fealden import util, backtracking, weboutput
+from . import util, backtracking, weboutput
 
 logger = logging.getLogger(__name__)
 

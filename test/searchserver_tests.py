@@ -9,7 +9,7 @@ import sys
 import tempfile
 
 from nose.tools import nottest
-from fealden import unafold, util, searchserver
+from fealden.lib import unafold, util, searchserver
 
 class RequestQueueBacktrackingException(Exception):
     def __init__(self, *args):
