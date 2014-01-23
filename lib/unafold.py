@@ -504,17 +504,10 @@ def check_recognition_stem(stemlh, stemrh, recognition, debug=False):
                 print(" check_recognition_stem(): lh match %s" %
                       util.match(stemlh, tomatch))
                 print(" check_recognition_stem(): rh match %s" %
-<<<<<<< HEAD:lib/unafold.py
                       util.match(stemrh, tomatch))
                 
             if(util.match(tuple(stemlh), tuple(tomatch)) or util.match(tuple(stemlh), tuple(tomatch[::-1])) or
                util.match(tuple(stemrh), tuple(tomatch)) or util.match(tuple(stemrh), tuple(tomatch[::-1]))):
-=======
-                      fealden.util.match(stemrh, tomatch))
-               
-            if(fealden.util.match(tuple(stemlh), tuple(tomatch)) or fealden.util.match(tuple(stemlh), tuple(tomatch[::-1])) or
-               fealden.util.match(tuple(stemrh), tuple(tomatch)) or fealden.util.match(tuple(stemrh), tuple(tomatch[::-1]))):
->>>>>>> 62b9cee7e6ac708b329e3b471c93efb8c454cee7:fealden/unafold.py
                 maxlength = float(len(recognition))
                 percent = float(end - start) / maxlength
                 if debug:
