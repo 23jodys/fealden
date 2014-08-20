@@ -41,23 +41,32 @@ def run_hybrid_ss_min(sensor, debug=False):
        Returns:
        list -- of lines from the .ct file
     """
+
+
     tempdir = tempfile.mkdtemp()
     try:
         # hybrid-ss-min can only read sequences in from a file and
         # write .ct data to a file, ughh...
         try:
+            if debug:
+                print "Attempting to open sequence file {}".format(os.path.join(tempdir, str(sensor)))
             seqfile = open(os.path.join(tempdir, str(sensor)),"w")
             seqfile.write(str(sensor))
             seqfile.close()
         except IOError:
             raise UNAFoldError("run_hybrid_ss_min(): can't create sequence file")
+
         command = ['hybrid-ss-min','-n','DNA','--tmin=25', '--tmax=25',
                    '--sodium=0.15', '--magnesium=0.005','--mfold=50,-1,100', str(sensor)]
 
-        # Run hybrid-ss-min
+        #assert os.access(command[0], os.X_OK), "run_hybrid_ss_min(): command {} not found, expected hybrid_ss_min".format(command[0])
+
+                # Run hybrid-ss-min
         try:
-            subprocess.check_call(command,cwd=tempdir, stdout=open("/dev/null"))
-        except IOError:
+            if debug:
+                print "Attempting to run command {} with cwd = {}, stdout to {}".format(command, tempdir, "/dev/null")
+            subprocess.check_call(command,cwd=tempdir, stdout=open("/dev/null", 'w'))
+        except IOError, OSError:
             raise UNAFoldError("run_hybrid_ss_min(): call %s failed" % ' '.join(command))
 
         # hybrid-ss-min creates a number of files each run, but the $SEQ.ct

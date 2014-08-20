@@ -1,5 +1,5 @@
 import ConfigParser
-from fealden.lib import config
+from fealden import config
 import io
 import os
 import shutil

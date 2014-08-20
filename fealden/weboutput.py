@@ -44,14 +44,23 @@ def run_unafold(unafold_dir, sensor, cmd="UNAFold.pl"):
         command = [cmd,'-n','DNA','--temp=25',
                    '--sodium=0.15', '--magnesium=0.005',
                    '--percent=50', str(sensor)]
-        subprocess.call(command,cwd=unafold_dir, stdout=open("/dev/null"))
+        print "running {} in {}".format(command, unafold_dir)
+        result = subprocess.check_output(command,cwd=unafold_dir, stderr=subprocess.STDOUT)
+
     except (OSError, IOError), err:
         raise RuntimeError(str(err))
+    except subprocess.CalledProcessError,err:
+        print "{} and output as follows: {}".format(err, result)
 
 def convert_substructure_images(unafold_dir, output_dir, convert_cmd="convert"):
     # Convert ps -> png for each substructure
-    
+    logger.debug( "convert_substructure_images({},{}): using convert={}".format(unafold_dir, output_dir, convert_cmd) )
     files = glob.glob(os.path.join(unafold_dir, "*.ps"))
+    logger.debug("convert_substructure_images({},{}): files -- {}".format(unafold_dir, output_dir, files))
+
+    if not os.access(output_dir, os.W_OK):
+        raise RuntimeError("No write access to output dir {}".format(output_dir))
+
     if len(files) == 0:
         raise RuntimeError("Unable to read any files from %s" % unafold_dir)
     
@@ -61,19 +70,21 @@ def convert_substructure_images(unafold_dir, output_dir, convert_cmd="convert"):
             name, ext = os.path.splitext(base)
             # Create large png version
             torun = [convert_cmd, ps, os.path.join(output_dir, name + ".png")]
-            subprocess.check_call(torun, stderr=subprocess.PIPE)
+            subprocess.check_output(torun, stderr=subprocess.STDOUT)
             # if errorcode != 0:
             #     (out,err) = 
             #     raise RuntimeError("convert_substructure_images: %s call failed with errorcode %d" %
             #                        (' '.join(torun), errorcode, ))
     except (OSError, IOError, subprocess.CalledProcessError), err:
+        logger.error("convert_substructure_images({},{}): convert had error, stdout and stderr to follow: {}".format(unafold_dir, output_dir, result))
         raise RuntimeError(str(err))
 
-def add_borders(folds, sensor, output_dir, cmd="/usr/bin/convert"):
+def add_borders(folds, sensor, output_dir, cmd="convert"):
     if len(folds) == 0:
         raise RuntimeError("add_borders(len(%s), %s, %s, %s): called with empty folds" %
                            (len(folds), sensor, output_dir, cmd))
     try:
+        result = ""
         for index, fold in enumerate(folds):
             if fold["type"] == "binding_on":
                 border_color = "green"
@@ -90,8 +101,11 @@ def add_borders(folds, sensor, output_dir, cmd="/usr/bin/convert"):
             convert_command = [cmd, "-scale 128x128 -border 10 -bordercolor ", border_color,
                                os.path.join(output_dir, str(sensor) + "_" + str(index + 1) + ".png"),
                                os.path.join(output_dir, str(sensor) + "_" + str(index + 1) + "_t.png")]
-            subprocess.check_call(' '.join(convert_command), shell=True)
+            result = subprocess.check_output(' '.join(convert_command), shell=True, stderr=subprocess.STDOUT)
     except (IOError, OSError, subprocess.CalledProcessError), err:
+        logger.error("add_borders({}): convert had error, stdout and stderr to follow: {}".format(output_dir,result))
+
+        
         raise RuntimeError(str(err))
 
 def solution_output(sensor, scores, folds, output_dir):
@@ -128,8 +142,8 @@ def solution_output(sensor, scores, folds, output_dir):
         try:
             run_unafold(unafold_dir, sensor)
         except RuntimeError, err:
-            logger.error("solution_output(%s, %s): unable to run UNAfold, permission problem or missing binary?" %
-                         (sensor, output_dir))
+            logger.error("solution_output(%s, %s): unable to run UNAfold, permission problem or missing binary?, %s" %
+                         (sensor, output_dir, str(err)))
             logger.error("   %s" % str(err))
             failed_output(sensor, output_dir, "unable to run UNAfold, permission problem?")
             return False
@@ -145,7 +159,8 @@ def solution_output(sensor, scores, folds, output_dir):
             return False
     finally:
         # Clean up after unafold
-        shutil.rmtree(unafold_dir)
+        #shutil.rmtree(unafold_dir)
+        pass
 
     # Add borders to each structure image and create thumbnails.
     try:

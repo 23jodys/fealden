@@ -6,9 +6,10 @@ import argparse
 
 from nose.tools import nottest
 
-from fealden.lib import unafold
-from fealden.lib import util
+from fealden import unafold
+from fealden import util
 
+test_dir = "fealden/test/tests/"
 
 def test_combine_stems_generator():
     def _combine_stems(left_stems, right_stems, expected, seq_length, message):
@@ -163,7 +164,8 @@ def test_quench_distance_generator():
 
 def test_fold_type_generator():
     """fold_type()"""
-    test_foldings = os.listdir("test/tests/fold_type/")
+    print "file is " + __file__
+    test_foldings = os.listdir(test_dir + "fold_type/")
 
     def _fold_type(fold, recognition, quencher, expected, foldnum, comment):
         result = unafold.fold_type(fold, recognition, quencher, True)
@@ -183,14 +185,14 @@ def test_fold_type_generator():
 
     for testname in test_foldings:
         print "testing %s" % testname
-        test_file = open("test/tests/fold_type/" + testname)
+        test_file = open(test_dir + "fold_type/" + testname)
         test = pickle.load(test_file)
         test_file.close()
 
         yield _fold_type, test[0], test[1], test[2], test[3], test[4], test[5]
 
 def fold_type_make_case(foldnum, seq, folding, recognition, quencher, expected, comment):
-    tosave = open(os.path.join("tests/fold_type/", seq + "_" + foldnum), 'w')
+    tosave = open(os.path.join(fold_dir+ "fold_type/", seq + "_" + foldnum), 'w')
     pickle.dump([folding, list(recognition), quencher, expected, foldnum, comment], tosave)
     tosave.close()
     print [folding, list(recognition), quencher, expected, foldnum, comment]
@@ -235,18 +237,19 @@ def run_hybrid_ss_min_test_generator():
         results = unafold.run_hybrid_ss_min(seq, True)
         assert results == expected
 
-    test_seqs = os.listdir("test/tests/run_hybrid_ss_min")
+    test_seqs = os.listdir(test_dir + "run_hybrid_ss_min")
     
     for test in test_seqs:
         try:
-            print "test/tests/run_hybrid_ss_min/" + test
-            expected_file = open("test/tests/run_hybrid_ss_min/" + test)
+            print test_dir + "run_hybrid_ss_min/" + test
+            expected_file = open(test_dir + "run_hybrid_ss_min/" + test)
             expected = pickle.load(expected_file)
             expected_file.close()
         except:
             print "Could not open file"
             assert False
 
+	print "attempting to yield: {},{}".format(test,expected)
         yield _run_hybrid_ss_min, test, expected
 
 def run_hybrid_ss_min_make_case(seq):
@@ -272,11 +275,11 @@ def test_find_stems_generator():
         else:
             pass
 
-    test_foldings = os.listdir("test/tests/find_stems/")
+    test_foldings = os.listdir(test_dir + "find_stems/")
 
     for test in test_foldings:
         try:
-            expected_file = open("test/tests/find_stems/" + test)
+            expected_file = open(test_dir + "find_stems/" + test)
             expected = pickle.load(expected_file)
             expected_file.close()
         except IOError:
@@ -307,11 +310,11 @@ def score_sensor_test_generator():
               (sensor, expected_scores, scores))
         assert scores == expected_scores
 
-    test_foldings = os.listdir("test/tests/score_sensor/")
+    test_foldings = os.listdir(test_dir + "score_sensor/")
 
     for test in test_foldings:
         try:
-            expected_file = open("test/tests/score_sensor/" + test)
+            expected_file = open(test_dir + "score_sensor/" + test)
             expected = pickle.load(expected_file)
             expected_file.close()
         except IOError:
@@ -324,7 +327,7 @@ def score_sensor_make_case(sensor):
     folds = unafold.parse_ct(unafold.run_hybrid_ss_min(sensor, True))
     scores = unafold.score_sensor(sensor, folds)
 
-    tosave_filename = "tests/score_sensor/" + str(sensor)
+    tosave_filename = test_dir + "score_sensor/" + str(sensor)
     tosave = open(tosave_filename,'w')
 
     pickle.dump((sensor, folds, scores), tosave)
@@ -357,12 +360,12 @@ def validate_sensor_test_generator():
                
         assert results == expected
 
-    test_seqs = os.listdir("test/tests/validate_sensor/")
+    test_seqs = os.listdir(test_dir + "validate_sensor/")
     
     for test in test_seqs:
         try:
-            print "test/tests/validate_sensor/" + test
-            expected_file = open("test/tests/validate_sensor/" + test)
+            print test_dir + "validate_sensor/" + test
+            expected_file = open(test_dir + "validate_sensor/" + test)
             expected = pickle.load(expected_file)
             expected_file.close()
         except:
@@ -389,7 +392,7 @@ def validate_sensor_make_cases():
         sensor.SetStem1(test[1])
         sensor.SetStem2(test[2])
 
-        test_file = "tests/validate_sensor/" + str(sensor)
+        test_file = test_dir + "validate_sensor/" + str(sensor)
         tosave = open(test_file, 'w')
 
         folds = unafold.parse_ct(unafold.run_hybrid_ss_min(sensor))

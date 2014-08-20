@@ -6,7 +6,10 @@ import shutil
 import subprocess
 from glob import glob
 
-from fealden.lib import weboutput, util
+#from fealden.lib import weboutput, util
+from fealden import weboutput, util
+
+test_dir = "fealden/test/tests/" 
 
 @raises(RuntimeError)
 def run_unafold_missing_unafolddir_test():
@@ -122,7 +125,7 @@ def convert_substructure_images_no_output_dir_test():
 @raises(RuntimeError)
 def add_borders_test_no_folds():
     #    def add_borders(folds, output_dir, cmd="/usr/bin/convert")
-    add_border_test_file = "./test/tests/add_borders/pngtest16rgba.png"
+    add_border_test_file = test_dir + "add_borders/pngtest16rgba.png"
     folds = []
     sensor = "ATTATATA"
 
@@ -136,7 +139,7 @@ def add_borders_test_no_folds():
 @raises(RuntimeError)
 def add_borders_test_no_output_dir():
     #    def add_borders(folds, output_dir, cmd="/usr/bin/convert")
-    add_border_test_file = "./test/tests/add_borders/pngtest16rgba.png"
+    add_border_test_file = test_dir + "add_borders/pngtest16rgba.png"
     folds = [ { "type": "binding_on" }]
     sensor = "ATTATATA"
     
@@ -149,7 +152,7 @@ def add_borders_test_no_output_dir():
 @raises(RuntimeError)
 def add_borders_test_missing_image_magick():
     #    def add_borders(folds, output_dir, cmd="/usr/bin/convert")
-    add_border_test_file = "./test/tests/add_borders/pngtest16rgba.png"
+    add_border_test_file = test_dir + "add_borders/pngtest16rgba.png"
     folds = [ { "type": "binding_on" }]
     #cmd = "/tmp/does_not_exist1"
     sensor = "ATTATATA"
@@ -164,7 +167,7 @@ def add_borders_test_missing_image_magick():
 
 def add_borders_test_clean():
     #    def add_borders(folds, output_dir, cmd="/usr/bin/convert")
-    add_border_test_file = "./test/tests/add_borders/pngtest16rgba.png"
+    add_border_test_file = test_dir + "add_borders/pngtest16rgba.png"
     folds = [ { "type": "binding_on" }]
 
     sensor = "ATTATATA"
@@ -197,7 +200,7 @@ def solution_output_test_generator():
     #     ["ATTA", 4, [ {"type":"binding_on"}, {"binding_percent":.10}]]
     # ]
 
-    testdir = "./test/tests/solution_output_tests/"
+    testdir = test_dir + "solution_output_tests/"
     tests = os.listdir(testdir)
 
     def _solution_output_tester(sensor, scores, folds):
@@ -210,12 +213,17 @@ def solution_output_test_generator():
 
         # Test for pickled data
         filename = os.path.join(temp_dir, "pickle.dat")
-        size = os.path.getsize(filename)
-        if size > 0:
-            print (" PICKLE_SIZE: Good, %d bytes" % (size))
+        if os.access(filename, os.R_OK):
+            size = os.path.getsize(filename)
+            if size > 0:
+                print (" PICKLE_SIZE: Good, %d bytes" % (size))
+            else:
+                print (" PICKLE_SIZE: Bad, %d bytes" % (size))
+                badtest = True
         else:
-            print (" PICKLE_SIZE: Bad, %d bytes" % (size))
+            print (" PICKLE_SIZE: no pickle {} found".format(filename)) 
             badtest = True
+
 
         #Test for image creation
         for filename in glob(os.path.join(temp_dir, "*_?.png")):

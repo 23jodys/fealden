@@ -3,6 +3,7 @@ This code was developed with the following versions
 python 2.7 (may work on 2.6 with backport of argparse)
 UNAfold 3.8 (http://dinamelt.rit.albany.edu/download.php)
 mfold_util-4.6
+ImageMagick-6.6.0.4
 
 Python Libraries: 
 setproctitle-1.1.7
@@ -10,9 +11,37 @@ python-daemon-1.5.5
 numpy-1.7.0
 web.py-0.37
 matplotlib-1.2.0
+nose
 
-Other Tools:
-ImageMagick-6.6.0.4
+# Installation notes
 
-For Developers:
-nosetests
+Be sure you install the non-python dependencies
+
+Use pip
+
+pip install fealden
+
+Tarball
+
+Extract the tarball and in fealden/ run
+
+# python setup.py install
+
+# Installation for developers
+
+Use pip, virtualenv, git and it should handle installing all of the
+python dependecies. You will need to find and install both UNAfold and
+mfold_utils into somewhere in your path.
+
+$ git clone https://github.com/23jodys/fealden
+Cloning into fealden...
+$ cd fealden
+$ virtualenv fealden-dev
+$ source bin/activate
+$ python setup.py develop
+
+... (do a bunch of work here)
+
+$ git commit -a "My commit message here"
+
+

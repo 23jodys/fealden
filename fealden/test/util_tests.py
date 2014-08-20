@@ -7,8 +7,7 @@ import tempfile
 
 from nose.tools import nottest
 
-from fealden.lib.util import Sensor
-from fealden.lib import util
+from fealden import util
 
 logger = logging.getLogger("fealden.util")
 logger.setLevel(logging.DEBUG)
@@ -20,7 +19,7 @@ def creation_test():
     #    [ [recog, stem1,stem2, repr] ]
     tests = [ ["ATTACC", "CGA", "GAC", "CGAATTACCTCGTGACGGTAATGTC"] ]
     for test in tests:
-        sensor = Sensor(test[0])
+        sensor = util.Sensor(test[0])
         sensor.SetStem1(test[1])
         sensor.SetStem2(test[2])
         print("util.Sensor.creation_test: expected 1 got 2\n1:%s\n2:%s" % 
@@ -33,7 +32,7 @@ def Sensor_quencher_index_tests():
               ["ATTA", "CG", "GC", 9]]
 
     def _quencher_index_tests(recog, stem1, stem2, expected):
-        sensor = Sensor(recog)
+        sensor = util.Sensor(recog)
         sensor.SetStem1(stem1)
         sensor.SetStem2(stem2)
         print "util.Sensor.quencher_index_tests(%s): expected %s, got %s" % (sensor,
@@ -53,7 +52,7 @@ def Sensor_quencher_tests():
 
 
     def _quencher_test(recog, stem1, stem2, expected):
-        sensor = Sensor(test[0])
+        sensor = util.Sensor(test[0])
         sensor.SetStem1(test[1])
         sensor.SetStem2(test[2])
         print "util.Sensor.quencher_tests: expected %s, got %s" % (test[3],
@@ -70,7 +69,7 @@ def guessstems_tests():
               ["ATTACC", "CGAA", "GAC", "T", "CGAAATTACCTTCGTGACTGGTAATAGTC"],
               ["ATTACC", "CGAA", "GACT", "C", "CGAACATTACCGTTCGTGACTGGTAATAGTC"]]
     for test in tests:
-        sensor = Sensor(test[0])
+        sensor = util.Sensor(test[0])
         sensor.SetStem1(test[1])
         sensor.SetStem2(test[2])
         sensor.GuessStems(test[3])
@@ -86,7 +85,7 @@ def RecognitionEnergy_tests():
               ["ATTTATTCG", -5.2]]
 
     def _recogenergy_test(recog, expected):
-        sensor = Sensor(recog)
+        sensor = util.Sensor(recog)
         print("util.Sensor.RecognitionEnergy_tests: for %s expected %f, got %f" %
               (sensor, expected, sensor.RecognitionEnergy()))
 
@@ -102,7 +101,7 @@ def StemEnergy_tests():
               ["CGAGGGAGAGG", "ATTTATTCG", -14.0]]
 
     def _stemenergy_test(stem1, stem2, expected):
-        sensor = Sensor("")
+        sensor = util.Sensor("")
         sensor.SetStem1(stem1)
         sensor.SetStem2(stem2)
 
@@ -119,7 +118,7 @@ def attrib_test_generator():
     tests = [ ["ATTA", "TAAT", "TCG", "CGA",  "CGAA", "TTCG"] ]
 
     def _attrib_test(recog, recogR, stem1,stem1R, stem2, stem2R):
-        sensor = Sensor(recog)
+        sensor = util.Sensor(recog)
         sensor.SetStem1(stem1)
         sensor.SetStem2(stem2)
         print "_attrib_test(%s, %s, %s)" % (recog, stem1, stem2)

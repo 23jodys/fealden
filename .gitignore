@@ -1,2 +1,10 @@
 *.pyc
 *~
+
+/dist/
+/build/
+/venv/
+/fealden_dev/
+/fealden.egg-info/
+
+*.swp
